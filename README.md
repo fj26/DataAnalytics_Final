@@ -1,4 +1,4 @@
-# Factors and Impacts of Greenhouse Gas Emissiosn
+# Factors and Impacts of Greenhouse Gas Emissions
 
 
 ## Summary
