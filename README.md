@@ -24,7 +24,9 @@ This repository contains raw data, proecessed data, codes, outputs, and a report
 ## Investigator
 
 Vicky Jia
+
 Nicholas School of the Environment, Duke University, Durham, NC 27705
+
 fanqi.jia@duke.edu
 
 ## Keywords
@@ -35,15 +37,19 @@ GHG, emissions, energy consumption, popolation growth, temperature anomaly, econ
 
 BEA_GDP_raw.csv:
 US annual gross domestic production and personal consumption expenditures data from 1990-2017.Data were retrieved from US Bureau of Economic Analysis National Income and Product Accounts (NIPA) Interactive Data Tables tool. Data were transposed by the investigator.
+
 (https://apps.bea.gov/iTable/iTable.cfm?reqid=19&step=2#reqid=19&step=2&isuri=1&1921=survey accessed on 2020-04-11.)
+
 The following selections were made: 
 *First Year: 1990-A&Q
 *Last Year: 2017-A&Q
 *Scale: billion
 *Series: Annual
 
+
 EIA_electricity-consumption_sector_raw.csv:
 The annual retail sales of electricity to ultimate customers by sector, by state, by provider from 1990 to 2018 in US. The data was retrieved from Annual Electric Power Industry Report, Form EIA-861 detailed data files from US Energy Information Administration.
+
 (https://www.eia.gov/electricity/data/state/sales_annual.xlsx accessed on 2020-04-11.)
 
 
