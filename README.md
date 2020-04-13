@@ -35,7 +35,7 @@ GHG, emissions, energy consumption, popolation growth, temperature anomaly, econ
 
 ## Database Information
 
-###BEA_GDP_raw.csv:
+### BEA_GDP_raw.csv:
 US annual gross domestic production and personal consumption expenditures data from 1990-2017.Data were retrieved from US Bureau of Economic Analysis National Income and Product Accounts (NIPA) Interactive Data Tables tool. Data were transposed by the investigator.
 (https://apps.bea.gov/iTable/iTable.cfm?reqid=19&step=2#reqid=19&step=2&isuri=1&1921=survey accessed on 2020-04-11.)
 
