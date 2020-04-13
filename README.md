@@ -214,11 +214,12 @@ Population by country
 
 ## Scripts and code
 
+To be updated.  
 <list any software scripts/code contained in the repository and a description of their purpose.>
-To be updated.
+
 
 ## Quality assurance/quality control
 
-To ensure the quality of this project, this project was developed from a tree graph - starting with a topic of interest, which is GHG emissions here, and exploring its resposible factors, such as population and electricity consumption, and then proceeding to another direction to consider potential impacts of this topic, which refers to economic development and temperature changes - to make sure all variables involved in this project are related to the topic, and also to conduct a comprehensive and complete project about GHG emissions.
+To ensure the quality of this project, this project was developed from a tree graph - starting with a topic of interest, which is GHG emissions here, and exploring its resposible factors, such as population and electricity consumption, and then proceeding to another direction to consider potential impacts of this topic, which refers to economic development and temperature changes - to make sure all variables involved in this project are related to the topic, and also to conduct a comprehensive and complete project about GHG emissions.     
 One essential rule to follow when collecting data among diverse sources of database is the temporal and geograhic scale of the dataset, that is all data must in the format of annual basis and cover the entire US. Monthly or daily and state-level data are also acceptable, but are at the lower priority than those data originally formatted as annual scale at the country level. 
 To avoid errors and mistakenly using data, before conducting the data analysis, a boxplot is created for each dataset to detect outliers. If data for certain year or certain sector is missing, the entire year will be considered in all dataset to keep the consistency of the analysis.
