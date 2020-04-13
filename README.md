@@ -35,7 +35,7 @@ GHG, emissions, energy consumption, popolation growth, temperature anomaly, econ
 
 ## Database Information
 
-##### BEA_GDP_raw.csv:
+#### BEA_GDP_raw.csv:
 US annual gross domestic production and personal consumption expenditures data from 1990-2017.Data were retrieved from US Bureau of Economic Analysis National Income and Product Accounts (NIPA) Interactive Data Tables tool. Data were transposed by the investigator.
 
 (https://apps.bea.gov/iTable/iTable.cfm?reqid=19&step=2#reqid=19&step=2&isuri=1&1921=survey accessed on 2020-04-11.)
@@ -51,13 +51,13 @@ The following selections were made:
 *Series: Annual
 
 
-##### EIA_electricity-consumption_sector_raw.csv:
+#### EIA_electricity-consumption_sector_raw.csv:
 The annual retail sales of electricity to ultimate customers by sector, by state, by provider from 1990 to 2018 in US. The data was retrieved from Annual Electric Power Industry Report, Form EIA-861 detailed data files from US Energy Information Administration.
 
 (https://www.eia.gov/electricity/data/state/sales_annual.xlsx accessed on 2020-04-11.)
 
 
-##### EPA_GHG_Gas_raw.csv:
+#### EPA_GHG_Gas_raw.csv:
 US GHG emission data by gas types in all sectors from 1990-2017 provided by EPA's annual Inventory of U.S. Greenhouse Gas Emissions and Sinks. Data was retrieved from US EPA Greenhouse Gas Inventory Data Explorer. Data were transposed by the investigator.
 
 (https://cfpub.epa.gov/ghgdata/inventoryexplorer/#allsectors/allgas/gas/all accessed on 2020-04-11.)
@@ -72,7 +72,7 @@ The following selections were made:
 
 *Year: All years
 
-##### EPA_GHG_Sector_raw.csv:
+#### EPA_GHG_Sector_raw.csv:
 GHG emission data by economic sectors for all greenhouse gases from 1990-2017 provided by EPA's annual Inventory of U.S. Greenhouse Gas Emissions and Sinks. Data was retrieved from US EPA Greenhouse Gas Inventory Data Explorer. Data were transposed by the investigator.
 
 (https://cfpub.epa.gov/ghgdata/inventoryexplorer/#allsectors/allgas/econsect/all accessed on 2020-04-11.)
@@ -87,7 +87,7 @@ The following selections were made:
 
 *Year: All years
 
-##### NOAA_temp_raw.csv:
+#### NOAA_temp_raw.csv:
 US mean annual temperature and temperature anomalies from 1990 to 2017. Data was retrieved from NOAA National Centers for Environmental Information Climate at a Glance.
 
 (https://www.ncdc.noaa.gov/cag/national/time-series/110/tavg/ann/12/1990-2017?base_prd=true&begbaseyear=1901&endbaseyear=2000, accessed on 2020-04-11.)
@@ -104,7 +104,7 @@ The following selections were made:
 
 *Display Base Period: Start: 1990, End: 2017
 
-##### WB_pop_raw.csv:
+#### WB_pop_raw.csv:
 Total annual population data from 1960-2018 retrieved from World Bank dataset. Data were transposed by the investigator.
 
 (https://data.worldbank.org/indicator/SP.POP.TOTL?locations=US accessed on 2020-04-11.)
@@ -119,8 +119,11 @@ The following selections were made in the searching window:
 ## Folder structure, file formats, and naming conventions 
 
 Raw Data - all raw data in csv files collected from the datasets above
+
 Processed Data - processed data in csv files via wrangling, data exploration, and data analysis
+
 Code - R markdown files for each step of analysis
+
 Output - output figures from analyses
 
 Files are named according to the following naming convention: `databasename_datatype_details_stage.format`, where: 
@@ -137,17 +140,19 @@ Files are named according to the following naming convention: `databasename_data
 
 ## Metadata
 
-BEA_GDP_raw.csv:
+#### BEA_GDP_raw.csv:
 US annual gross domestic production and personal consumption expenditures data from 1990-2017. Values are in the units of "billions of dollars".
+
 Column names without descriptors are self-explanatory.
+
 Year: 1990-2017
-1 Gross domestic product
-2 Personal consumption expenditures
-3 Goods
-4 Durable goods
-5 Nondurable goods
-6 Services
-7 Gross private domestic investment	    
+1 Gross domestic product        
+2 Personal consumption expenditures       
+3 Goods         
+4 Durable goods         
+5 Nondurable goods          
+6 Services          
+7 Gross private domestic investment	          
 8 Fixed investment	        
 9 Nonresidential	            
 10 Structures	            
@@ -168,56 +173,70 @@ Year: 1990-2017
 25 Nondefense	    
 26 State and local
 
-EIA_electricity-consumption_sector_raw.csv:
-The annual electricity consumptions from 1990 to 2018 in US by state, by  sector, and by provider. Sales to ulimate customers are used as eletricity consumptions in that sector.
+#### EIA_electricity-consumption_sector_raw.csv:
+The annual electricity consumptions from 1990 to 2018 in US by state, by  sector, and by provider. Sales to ulimate customers are used as eletricity consumptions in that sector.      
+
 Column names without descriptors are self-explanatory.
-Year: 1990-2018
-State: 50 states + District of Columbia + US total
-Industry Sector Category:
-"Energy-Only Providers": Only energy service without delivery
-"Full-Service Providers": Energy and delivery services
-"Total Electric Industry": Sum of both providers above
-Residential: Megawatthours of electricity sold to the residential sector
-Commercial: Megawatthours of electricity sold to the commercial sector
-Industrial: Megawatthours of electricity sold to the industrial sector
-Transportation: Megawatthours of electricity sold to the transportation sector
-Other: Megawatthours of electricity sold to other sectors not fallen in above categories
+
+Year: 1990-2018     
+State: 50 states + District of Columbia + US total          
+Industry Sector Category:       
+"Energy-Only Providers": Only energy service without delivery         
+"Full-Service Providers": Energy and delivery services          
+"Total Electric Industry": Sum of both providers above        
+Residential: Megawatthours of electricity sold to the residential sector        
+Commercial: Megawatthours of electricity sold to the commercial sector        
+Industrial: Megawatthours of electricity sold to the industrial sector        
+Transportation: Megawatthours of electricity sold to the transportation sector        
+Other: Megawatthours of electricity sold to other sectors not fallen in above categories        
 Total: Sum of megawatthours of electricity above
 
-EPA_GHG_Gas_raw.csv:
+
+#### EPA_GHG_Gas_raw.csv:
 US GHG emission data by gas types in all sectors from 1990-2017 provided by EPA's annual Inventory of U.S. Greenhouse Gas Emissions and Sinks.
+
 Column names without descriptors are self-explanatory.
-Year: 1990-2017
-Carbon dioxide: Concentration of CO2 in the unit of million metric tons of carbon dioxide equivalents
-Methane: Concentration of CH4 in the unit of million metric tons of carbon dioxide equivalents
-Nitrous oxide:Concentration of N2O in the unit of million metric tons of carbon dioxide equivalents
-Fluorinated gases: Concentration of fluorinated gases in the unit of million metric tons of carbon dioxide equivalents
+
+Year: 1990-2017       
+Carbon dioxide: Concentration of CO2 in the unit of million metric tons of carbon dioxide equivalents   
+Methane: Concentration of CH4 in the unit of million metric tons of carbon dioxide equivalents      
+Nitrous oxide:Concentration of N2O in the unit of million metric tons of carbon dioxide equivalents   
+Fluorinated gases: Concentration of fluorinated gases in the unit of million metric tons of carbon dioxide equivalents     
 Total: sum of all gases above for that year
 
-EPA_GHG_Sector_raw.csv:
+
+#### EPA_GHG_Sector_raw.csv:
 US GHG emission data by economic sectors for all greenhouse gases from 1990-2017 provided by EPA's annual Inventory of U.S. Greenhouse Gas Emissions and Sinks.
+
 Column names without descriptors are self-explanatory.
-Year: 1990-2017
-Transportation: GHG emissions in the unit of million metric tons of carbon dioxide equivalents in the transportation sector
-Electricity generation: GHG emissions in the unit of million metric tons of carbon dioxide equivalents in the electricity sector
-Industry: GHG emissions in the unit of million metric tons of carbon dioxide equivalents in the industrial sector
-Agriculture: GHG emissions in the unit of million metric tons of carbon dioxide equivalents in the agriculture sector
-Commercial: GHG emissions in the unit of million metric tons of carbon dioxide equivalents in the commercial sector
-Residential: GHG emissions in the unit of million metric tons of carbon dioxide equivalents in the residential sector 
-U.S. territories: GHG emissions in the unit of million metric tons of carbon dioxide equivalents in all U.S. territories
+
+Year: 1990-2017   
+Transportation: GHG emissions in the unit of million metric tons of carbon dioxide equivalents in the transportation sector       
+Electricity generation: GHG emissions in the unit of million metric tons of carbon dioxide equivalents in the electricity sector     
+Industry: GHG emissions in the unit of million metric tons of carbon dioxide equivalents in the industrial sector     
+Agriculture: GHG emissions in the unit of million metric tons of carbon dioxide equivalents in the agriculture sector      
+Commercial: GHG emissions in the unit of million metric tons of carbon dioxide equivalents in the commercial sector       
+Residential: GHG emissions in the unit of million metric tons of carbon dioxide equivalents in the residential sector        
+U.S. territories: GHG emissions in the unit of million metric tons of carbon dioxide equivalents in all U.S. territories        
 Total: sum of emissions from all sectors above for that year
 
-NOAA_temp_raw.csv:
-US mean annual temperature and temperature anomalies from 1990 to 2017.
-Column names without descriptors are self-explanatory.
-Date: YearMonth
-Value: mean annual temperature in fahrenheit
-Anomaly: Difference from mean (53.26F) in 1990-2017 base period
 
-WB_pop_raw.csv:
-Total annual population data from 1960-2018 retrieved from World Bank dataset.
+#### NOAA_temp_raw.csv:
+US mean annual temperature and temperature anomalies from 1990 to 2017.
+
 Column names without descriptors are self-explanatory.
+
+Date: YearMonth         
+Value: mean annual temperature in fahrenheit          
+Anomaly: Difference from mean (53.26F) in 1990-2017 base period       
+
+#### WB_pop_raw.csv:
+Total annual population data from 1960-2018 retrieved from World Bank dataset.
+
+Column names without descriptors are self-explanatory.
+
 Year
+
 Population by country
 
 ## Scripts and code
