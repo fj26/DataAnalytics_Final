@@ -23,10 +23,8 @@ This repository contains raw data, proecessed data, codes, outputs, and a report
 
 ## Investigator
 
-Vicky Jia
-
-Nicholas School of the Environment, Duke University, Durham, NC 27705
-
+Vicky Jia     
+Nicholas School of the Environment, Duke University, Durham, NC 27705     
 fanqi.jia@duke.edu
 
 ## Keywords
@@ -36,18 +34,13 @@ GHG, emissions, energy consumption, popolation growth, temperature anomaly, econ
 ## Database Information
 
 #### BEA_GDP_raw.csv:
-US annual gross domestic production and personal consumption expenditures data from 1990-2017.Data were retrieved from US Bureau of Economic Analysis National Income and Product Accounts (NIPA) Interactive Data Tables tool. Data were transposed by the investigator.
-
+US annual gross domestic production and personal consumption expenditures data from 1990-2017.Data were retrieved from US Bureau of Economic Analysis National Income and Product Accounts (NIPA) Interactive Data Tables tool. Data were transposed by the investigator.       
 (https://apps.bea.gov/iTable/iTable.cfm?reqid=19&step=2#reqid=19&step=2&isuri=1&1921=survey accessed on 2020-04-11.)
 
-The following selections were made:
-
-*First Year: 1990-A&Q
-
-*Last Year: 2017-A&Q
-
-*Scale: billion
-
+The following selections were made:       
+*First Year: 1990-A&Q       
+*Last Year: 2017-A&Q        
+*Scale: billion           
 *Series: Annual
 
 
@@ -58,73 +51,54 @@ The annual retail sales of electricity to ultimate customers by sector, by state
 
 
 #### EPA_GHG_Gas_raw.csv:
-US GHG emission data by gas types in all sectors from 1990-2017 provided by EPA's annual Inventory of U.S. Greenhouse Gas Emissions and Sinks. Data was retrieved from US EPA Greenhouse Gas Inventory Data Explorer. Data were transposed by the investigator.
-
+US GHG emission data by gas types in all sectors from 1990-2017 provided by EPA's annual Inventory of U.S. Greenhouse Gas Emissions and Sinks. Data was retrieved from US EPA Greenhouse Gas Inventory Data Explorer. Data were transposed by the investigator.       
 (https://cfpub.epa.gov/ghgdata/inventoryexplorer/#allsectors/allgas/gas/all accessed on 2020-04-11.)
 
-The following selections were made: 
-
-*Sector: All sectors
-
-*Greenhouse gas: All gases
-
-*Break out by: Gas
-
+The following selections were made:         
+*Sector: All sectors          
+*Greenhouse gas: All gases        
+*Break out by: Gas        
 *Year: All years
 
-#### EPA_GHG_Sector_raw.csv:
-GHG emission data by economic sectors for all greenhouse gases from 1990-2017 provided by EPA's annual Inventory of U.S. Greenhouse Gas Emissions and Sinks. Data was retrieved from US EPA Greenhouse Gas Inventory Data Explorer. Data were transposed by the investigator.
 
+#### EPA_GHG_Sector_raw.csv:
+GHG emission data by economic sectors for all greenhouse gases from 1990-2017 provided by EPA's annual Inventory of U.S. Greenhouse Gas Emissions and Sinks. Data was retrieved from US EPA Greenhouse Gas Inventory Data Explorer. Data were transposed by the investigator.        
 (https://cfpub.epa.gov/ghgdata/inventoryexplorer/#allsectors/allgas/econsect/all accessed on 2020-04-11.)
 
 The following selections were made: 
-
-*Sector: All sectors
-
-*Greenhouse gas: All gases
-
-*Break out by: Economic sector
-
+*Sector: All sectors          
+*Greenhouse gas: All gases        
+*Break out by: Economic sector        
 *Year: All years
 
-#### NOAA_temp_raw.csv:
-US mean annual temperature and temperature anomalies from 1990 to 2017. Data was retrieved from NOAA National Centers for Environmental Information Climate at a Glance.
 
+#### NOAA_temp_raw.csv:
+US mean annual temperature and temperature anomalies from 1990 to 2017. Data was retrieved from NOAA National Centers for Environmental Information Climate at a Glance.       
 (https://www.ncdc.noaa.gov/cag/national/time-series/110/tavg/ann/12/1990-2017?base_prd=true&begbaseyear=1901&endbaseyear=2000, accessed on 2020-04-11.)
 
-The following selections were made:
+The following selections were made:       
+*Parameter: Average Temperature       
+*Time Scale: Annual         
+*Start Year: 1990         
+*End Year: 2017         
+*Display Base Period: Start: 1990, End: 2017        
 
-*Parameter: Average Temperature
-
-*Time Scale: Annual
-
-*Start Year: 1990
-
-*End Year: 2017
-
-*Display Base Period: Start: 1990, End: 2017
 
 #### WB_pop_raw.csv:
-Total annual population data from 1960-2018 retrieved from World Bank dataset. Data were transposed by the investigator.
-
+Total annual population data from 1960-2018 retrieved from World Bank dataset. Data were transposed by the investigator.       
 (https://data.worldbank.org/indicator/SP.POP.TOTL?locations=US accessed on 2020-04-11.)
 
-The following selections were made in the searching window:
-
-*Population, total
-
+The following selections were made in the searching window:       
+*Population, total          
 *United States
 
 
 ## Folder structure, file formats, and naming conventions 
 
-Raw Data - all raw data in csv files collected from the datasets above
-
-Processed Data - processed data in csv files via wrangling, data exploration, and data analysis
-
-Code - R markdown files for each step of analysis
-
-Output - output figures from analyses
+Raw Data - all raw data in csv files collected from the datasets above        
+Processed Data - processed data in csv files via wrangling, data exploration, and data analysis     
+Code - R markdown files for each step of analysis         
+Output - output figures from analyses     
 
 Files are named according to the following naming convention: `databasename_datatype_details_stage.format`, where: 
 
@@ -145,7 +119,7 @@ US annual gross domestic production and personal consumption expenditures data f
 
 Column names without descriptors are self-explanatory.
 
-Year: 1990-2017
+Year: 1990-2017       
 1 Gross domestic product        
 2 Personal consumption expenditures       
 3 Goods         
@@ -235,8 +209,7 @@ Total annual population data from 1960-2018 retrieved from World Bank dataset.
 
 Column names without descriptors are self-explanatory.
 
-Year
-
+Year        
 Population by country
 
 ## Scripts and code
