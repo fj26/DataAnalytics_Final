@@ -35,56 +35,84 @@ GHG, emissions, energy consumption, popolation growth, temperature anomaly, econ
 
 ## Database Information
 
-### BEA_GDP_raw.csv:
+##### BEA_GDP_raw.csv:
 US annual gross domestic production and personal consumption expenditures data from 1990-2017.Data were retrieved from US Bureau of Economic Analysis National Income and Product Accounts (NIPA) Interactive Data Tables tool. Data were transposed by the investigator.
+
 (https://apps.bea.gov/iTable/iTable.cfm?reqid=19&step=2#reqid=19&step=2&isuri=1&1921=survey accessed on 2020-04-11.)
 
-The following selections were made: 
+The following selections were made:
+
 *First Year: 1990-A&Q
+
 *Last Year: 2017-A&Q
+
 *Scale: billion
+
 *Series: Annual
 
 
-EIA_electricity-consumption_sector_raw.csv:
+##### EIA_electricity-consumption_sector_raw.csv:
 The annual retail sales of electricity to ultimate customers by sector, by state, by provider from 1990 to 2018 in US. The data was retrieved from Annual Electric Power Industry Report, Form EIA-861 detailed data files from US Energy Information Administration.
 
 (https://www.eia.gov/electricity/data/state/sales_annual.xlsx accessed on 2020-04-11.)
 
 
-EPA_GHG_Gas_raw.csv
+##### EPA_GHG_Gas_raw.csv:
 US GHG emission data by gas types in all sectors from 1990-2017 provided by EPA's annual Inventory of U.S. Greenhouse Gas Emissions and Sinks. Data was retrieved from US EPA Greenhouse Gas Inventory Data Explorer. Data were transposed by the investigator.
+
 (https://cfpub.epa.gov/ghgdata/inventoryexplorer/#allsectors/allgas/gas/all accessed on 2020-04-11.)
+
 The following selections were made: 
+
 *Sector: All sectors
+
 *Greenhouse gas: All gases
+
 *Break out by: Gas
+
 *Year: All years
 
-EPA_GHG_Sector_raw.csv:
+##### EPA_GHG_Sector_raw.csv:
 GHG emission data by economic sectors for all greenhouse gases from 1990-2017 provided by EPA's annual Inventory of U.S. Greenhouse Gas Emissions and Sinks. Data was retrieved from US EPA Greenhouse Gas Inventory Data Explorer. Data were transposed by the investigator.
+
 (https://cfpub.epa.gov/ghgdata/inventoryexplorer/#allsectors/allgas/econsect/all accessed on 2020-04-11.)
+
 The following selections were made: 
+
 *Sector: All sectors
+
 *Greenhouse gas: All gases
+
 *Break out by: Economic sector
+
 *Year: All years
 
-NOAA_temp_raw.csv:
+##### NOAA_temp_raw.csv:
 US mean annual temperature and temperature anomalies from 1990 to 2017. Data was retrieved from NOAA National Centers for Environmental Information Climate at a Glance.
+
 (https://www.ncdc.noaa.gov/cag/national/time-series/110/tavg/ann/12/1990-2017?base_prd=true&begbaseyear=1901&endbaseyear=2000, accessed on 2020-04-11.)
+
 The following selections were made:
+
 *Parameter: Average Temperature
+
 *Time Scale: Annual
+
 *Start Year: 1990
+
 *End Year: 2017
+
 *Display Base Period: Start: 1990, End: 2017
 
-WB_pop_raw.csv:
+##### WB_pop_raw.csv:
 Total annual population data from 1960-2018 retrieved from World Bank dataset. Data were transposed by the investigator.
+
 (https://data.worldbank.org/indicator/SP.POP.TOTL?locations=US accessed on 2020-04-11.)
+
 The following selections were made in the searching window:
+
 *Population, total
+
 *United States
 
 
