@@ -1,0 +1,92 @@
+---
+title: "Processed code"
+author: "Vicky Jia"
+date: "4/17/2020"
+output: pdf_document
+editor_options: 
+  chunk_output_type: console
+---
+```{r}
+#Set up
+getwd()
+library(tidyverse)
+library(cowplot)
+library(lubridate)
+GDP <- read_csv('./Raw Data/BEA_GDP_raw.csv')
+electric <- read_csv('./Raw Data/EIA_electricity-consumption_sector_raw.csv')
+GHG.gas <- read_csv('./Raw Data/EPA_GHG_Gas_raw.csv')
+GHG.sector <- read_csv('./Raw Data/EPA_GHG_Sector_raw.csv')
+temp <- read_csv('./Raw Data/NOAA_temp_raw.csv')
+ppl <- read_csv('./Raw Data/WB_pop_raw.csv')
+
+#Wrangle 
+str(GDP)
+colnames(GDP)
+GDP <-  GDP %>%
+  rename('GDP' = `Gross domestic product`, 'Personal_consumption' = `Personal consumption expenditures`)
+colnames(GDP)
+
+GDP.select<- GDP %>%
+  select(Year, GDP, Personal_consumption) %>%
+  filter(Year>1989 & Year < 2018)
+dim(GDP.select)
+
+
+str(electric)
+colnames(electric)
+electric <- electric %>%
+  rename('Industry_Sector' = `Industry Sector Category`)
+colnames(electric)
+
+elec.select <- electric %>%
+  select(Year, State, Industry_Sector, Residential, Commercial, Industrial, Transportation) %>%
+  filter(State == 'US'& Year>1989 & Year < 2018 & Industry_Sector == 'Total Electric Industry')
+dim(elec.select)
+  
+str(GHG.gas)
+colnames(GHG.gas)
+GHG.gas <- GHG.gas %>%
+  rename("CO2" = `Carbon dioxide`, 'N2O' = `Nitrous oxide`, 'Fgas' = `Fluorinated gases`)
+colnames(GHG.gas)
+
+GHG.gas.select <- GHG.gas %>%
+  select(Year, CO2, Methane, N2O, Fgas)
+dim(GHG.gas.select)
+
+
+str(GHG.sector)
+colnames(GHG.sector)
+GHG.sector <- GHG.sector %>%
+  rename('elec_gene' = `Electricity generation`)
+colnames(GHG.sector)
+
+GHG.sector.select <- GHG.sector %>%
+  select(Year, Transportation, elec_gene, Industry, Agriculture, Commercial, Residential)
+dim(GHG.sector.select)
+
+str(temp)
+colnames(temp)
+temp$Date <- year(as.Date(as.yearmon(as.character(temp$Date), format = "%Y%m")))
+class(temp$Date)
+dim(temp)
+
+str(ppl)
+ppl.select <- ppl %>%
+  select(Year, `United States`) %>%
+  filter(Year >1989 & Year < 2018)
+dim(ppl.select)
+
+colnames(ppl.select)
+ppl.select <- ppl.select %>%
+  rename('United_States' = `United States`)
+
+write.csv(GDP.select, row.names = FALSE, file = './Processed Data/BEA_GDP_processed.csv')
+write.csv(elec.select, row.names = FALSE, file = './Processed Data/EIA_electricity-consumption_sector_processed.csv')
+write.csv(GHG.gas.select, row.names = FALSE, file = './Processed Data/EPA_GHG_Gas_processed.csv')
+write.csv(GHG.sector.select, row.names = FALSE, file = './Processed Data/EPA_GHG_Sector_processed.csv')
+write.csv(temp, row.names = FALSE, file = './Processed Data/NOAA_temp_processed.csv')
+write.csv(ppl.select, row.names = FALSE, file = './Processed Data/WB_pop_processed.csv')
+
+
+```
+
