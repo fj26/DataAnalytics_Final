@@ -66,9 +66,12 @@ dim(GHG.sector.select)
 
 str(temp)
 colnames(temp)
-temp$Date <- year(as.Date(as.yearmon(as.character(temp$Date), format = "%Y%m")))
-class(temp$Date)
-dim(temp)
+temp <- mutate(temp, Year = year(as.Date(as.yearmon(as.character(temp$Date), format = "%Y%m"))))
+str(temp)
+temp.select <- temp %>%
+  select(Year, Value, Anomaly)
+dim(temp.select)
+
 
 str(ppl)
 ppl.select <- ppl %>%
@@ -84,7 +87,7 @@ write.csv(GDP.select, row.names = FALSE, file = './Processed Data/BEA_GDP_proces
 write.csv(elec.select, row.names = FALSE, file = './Processed Data/EIA_electricity-consumption_sector_processed.csv')
 write.csv(GHG.gas.select, row.names = FALSE, file = './Processed Data/EPA_GHG_Gas_processed.csv')
 write.csv(GHG.sector.select, row.names = FALSE, file = './Processed Data/EPA_GHG_Sector_processed.csv')
-write.csv(temp, row.names = FALSE, file = './Processed Data/NOAA_temp_processed.csv')
+write.csv(temp.select, row.names = FALSE, file = './Processed Data/NOAA_temp_processed.csv')
 write.csv(ppl.select, row.names = FALSE, file = './Processed Data/WB_pop_processed.csv')
 
 
