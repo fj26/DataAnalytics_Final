@@ -25,15 +25,6 @@ projecttheme <- theme_light() +
     legend.text = element_text(size = 10),
     legend.position = "bottom")
 theme_set(projecttheme)
-
-write.csv(GDP.select, row.names = FALSE, file = './Processed Data/BEA_GDP_processed.csv')
-write.csv(elec.select, row.names = FALSE, file = './Processed Data/EIA_electricity-consumption_sector_processed.csv')
-write.csv(GHG.gas.select, row.names = FALSE, file = './Processed Data/EPA_GHG_Gas_processed.csv')
-write.csv(GHG.sector.select, row.names = FALSE, file = './Processed Data/EPA_GHG_Sector_processed.csv')
-write.csv(temp.select, row.names = FALSE, file = './Processed Data/NOAA_temp_processed.csv')
-write.csv(ppl.select, row.names = FALSE, file = './Processed Data/WB_pop_processed.csv')
-
-
 ```
 
 #GDP
@@ -63,6 +54,8 @@ GDP.line <- ggplot(GDP.gather)+
   scale_color_brewer(type='qual', direction = -1)+
   scale_x_continuous("Year", labels = as.character(GDP.gather$Year), breaks = GDP.gather$Year)
 print(GDP.line)
+
+write.csv(GDP.select, row.names = FALSE, file = './Processed Data/BEA_GDP_processed.csv')
 ```
 
 #Electricity Consumption
@@ -103,6 +96,8 @@ elec.line <- ggplot(elec.gather2)+
   facet_wrap(vars(Sector), scales = 'free')+
   theme(legend.position = "none") 
 print(elec.line)
+
+write.csv(elec.select, row.names = FALSE, file = './Processed Data/EIA_electricity-consumption_sector_processed.csv')
 
 ```
 
@@ -146,6 +141,8 @@ plot_grid(GHG.gas.line,
           GHG.gas.line.facet,
           label_x = 0.2,
           nrow = 2)
+
+write.csv(GHG.gas.select, row.names = FALSE, file = './Processed Data/EPA_GHG_Gas_processed.csv')
 ```
 
 #GHG sector
@@ -191,6 +188,7 @@ plot_grid(GHG.sector.line,
           GHG.sector.line.facet,
           label_x = 0.2,
           nrow = 2)
+write.csv(GHG.sector.select, row.names = FALSE, file = './Processed Data/EPA_GHG_Sector_processed.csv')
 ```
 
 #Temperature
@@ -232,6 +230,8 @@ plot_grid(temp.line,
           temp.anom,
           label_x = 0.2,
           nrow = 2)
+
+write.csv(temp.select, row.names = FALSE, file = './Processed Data/NOAA_temp_processed.csv')
 ```
 
 #Population
@@ -251,6 +251,15 @@ colnames(ppl.select)
 
 kable(head(ppl.select), caption = "First 6 years of US population in 1990-2017") %>%
   kable_styling(latex_options="scale_down")
+
+
+write.csv(ppl.select, row.names = FALSE, file = './Processed Data/WB_pop_processed.csv')
+```
+
+#Save processed files
+```{r}
+
+
 
 ```
 
