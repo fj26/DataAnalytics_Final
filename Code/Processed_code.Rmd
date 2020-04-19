@@ -12,76 +12,19 @@ getwd()
 library(tidyverse)
 library(cowplot)
 library(lubridate)
-GDP <- read_csv('./Raw Data/BEA_GDP_raw.csv')
-electric <- read_csv('./Raw Data/EIA_electricity-consumption_sector_raw.csv')
-GHG.gas <- read_csv('./Raw Data/EPA_GHG_Gas_raw.csv')
-GHG.sector <- read_csv('./Raw Data/EPA_GHG_Sector_raw.csv')
-temp <- read_csv('./Raw Data/NOAA_temp_raw.csv')
-ppl <- read_csv('./Raw Data/WB_pop_raw.csv')
-
-#Wrangle 
-str(GDP)
-colnames(GDP)
-GDP <-  GDP %>%
-  rename('GDP' = `Gross domestic product`, 'Personal_consumption' = `Personal consumption expenditures`)
-colnames(GDP)
-
-GDP.select<- GDP %>%
-  select(Year, GDP, Personal_consumption) %>%
-  filter(Year>1989 & Year < 2018)
-dim(GDP.select)
-
-
-str(electric)
-colnames(electric)
-electric <- electric %>%
-  rename('Industry_Sector' = `Industry Sector Category`)
-colnames(electric)
-
-elec.select <- electric %>%
-  select(Year, State, Industry_Sector, Residential, Commercial, Industrial, Transportation) %>%
-  filter(State == 'US'& Year>1989 & Year < 2018 & Industry_Sector == 'Total Electric Industry')
-dim(elec.select)
-  
-str(GHG.gas)
-colnames(GHG.gas)
-GHG.gas <- GHG.gas %>%
-  rename("CO2" = `Carbon dioxide`, 'N2O' = `Nitrous oxide`, 'Fgas' = `Fluorinated gases`)
-colnames(GHG.gas)
-
-GHG.gas.select <- GHG.gas %>%
-  select(Year, CO2, Methane, N2O, Fgas)
-dim(GHG.gas.select)
-
-
-str(GHG.sector)
-colnames(GHG.sector)
-GHG.sector <- GHG.sector %>%
-  rename('elec_gene' = `Electricity generation`)
-colnames(GHG.sector)
-
-GHG.sector.select <- GHG.sector %>%
-  select(Year, Transportation, elec_gene, Industry, Agriculture, Commercial, Residential)
-dim(GHG.sector.select)
-
-str(temp)
-colnames(temp)
-temp <- mutate(temp, Year = year(as.Date(as.yearmon(as.character(temp$Date), format = "%Y%m"))))
-str(temp)
-temp.select <- temp %>%
-  select(Year, Value, Anomaly)
-dim(temp.select)
-
-
-str(ppl)
-ppl.select <- ppl %>%
-  select(Year, `United States`) %>%
-  filter(Year >1989 & Year < 2018)
-dim(ppl.select)
-
-colnames(ppl.select)
-ppl.select <- ppl.select %>%
-  rename('United_States' = `United States`)
+library(zoo)
+library(knitr)
+library(kableExtra)
+library(viridis)
+projecttheme <- theme_light() + 
+  theme(
+    plot.title = element_text(color = 'dimgray', size = 12, face = 'bold'), 
+    axis.text = element_text(color = "black", size= 10), 
+    axis.title = element_text(color = 'black', size = 11, face = 'bold'),
+    axis.text.x = element_text(angle = 45, hjust = 1),
+    legend.text = element_text(size = 10),
+    legend.position = "bottom")
+theme_set(projecttheme)
 
 write.csv(GDP.select, row.names = FALSE, file = './Processed Data/BEA_GDP_processed.csv')
 write.csv(elec.select, row.names = FALSE, file = './Processed Data/EIA_electricity-consumption_sector_processed.csv')
@@ -90,6 +33,224 @@ write.csv(GHG.sector.select, row.names = FALSE, file = './Processed Data/EPA_GHG
 write.csv(temp.select, row.names = FALSE, file = './Processed Data/NOAA_temp_processed.csv')
 write.csv(ppl.select, row.names = FALSE, file = './Processed Data/WB_pop_processed.csv')
 
+
+```
+
+#GDP
+```{r}
+GDP <- read.csv('./Raw Data/BEA_GDP_raw.csv')
+str(GDP)
+colnames(GDP)
+GDP <- GDP %>%
+  rename('GDP' = 'Gross.domestic.product', 'Personal_consumption' = 'Personal.consumption.expenditures')
+
+GDP.select<- GDP %>%
+  select(Year, GDP, Personal_consumption) %>%
+  filter(Year>1989 & Year < 2018)
+dim(GDP.select)
+
+kable(head(GDP.select), caption = "First 6 years of GDP and personal consumption (billion US$)") %>%
+  kable_styling(latex_options="scale_down")
+
+GDP.gather <- gather(GDP.select, 'Type', 'Value', -Year)
+count(GDP.gather)
+
+GDP.line <- ggplot(GDP.gather)+
+  geom_line(aes(x= Year, y=Value, color = Type))+
+  labs(y= 'US$ (billion)',
+       title = 'US Economic Features in 1990-2017',
+       color = '')+
+  scale_color_brewer(type='qual', direction = -1)+
+  scale_x_continuous("Year", labels = as.character(GDP.gather$Year), breaks = GDP.gather$Year)
+print(GDP.line)
+```
+
+#Electricity Consumption
+```{r}
+electric <- read.csv('./Raw Data/EIA_electricity-consumption_sector_raw.csv')
+
+str(electric)
+colnames(electric)
+electric <- electric %>%
+  rename('Industry_Sector' = Industry.Sector.Category, 'elec_residential' = Residential, 'elec_commercial' = Commercial, 'elec_industrial' = Industrial, 'elec_transport' =Transportation)
+colnames(electric)
+
+elec.select <- electric %>%
+  filter(State == 'US'& Year>1989 & Year < 2018 & Industry_Sector == 'Total Electric Industry')%>%
+  select(Year, elec_residential, elec_commercial, elec_industrial, elec_transport) 
+dim(elec.select)
+
+kable(head(elec.select), caption = "First 6 years of electricity consumptions by sector in US (Mwh)") %>%
+  kable_styling(latex_options="scale_down")
+
+elec.gather <- gather(elec.select, 'Sector', 'Electricity_Consumption', -Year)
+count(GDP.gather)
+elec.gather$Electricity_Consumption <- str_replace_all(elec.gather$Electricity_Consumption,
+pattern = "([,])", replacement = "")
+
+elec.gather$Electricity_Consumption <- as.numeric(elec.gather$Electricity_Consumption)
+str(elec.gather)
+elec.gather2 <- elec.gather %>%
+  filter(!is.na(Electricity_Consumption))
+
+elec.line <- ggplot(elec.gather2)+
+  geom_line(aes(x= Year, y=Electricity_Consumption, color=Sector))+
+  labs(y= 'Electricity Consumption (Mwh)',
+       title = 'US Electricty Consumption by Sector in 1990-2017',
+       color = '')+
+  scale_color_brewer(palette = 'Set1')+
+  #scale_x_continuous("Year", labels = as.character(elec.gather2$Year), breaks = elec.gather2$Year)+
+  facet_wrap(vars(Sector), scales = 'free')+
+  theme(legend.position = "none") 
+print(elec.line)
+
+```
+
+#GHG gases
+```{r}
+GHG.gas <- read.csv('./Raw Data/EPA_GHG_Gas_raw.csv')
+
+str(GHG.gas)
+colnames(GHG.gas)
+GHG.gas <- GHG.gas %>%
+  rename("CO2" = Carbon.dioxide, 'CH4' = Methane, 'N2O' = Nitrous.oxide, 'Fgas' = Fluorinated.gases)
+colnames(GHG.gas)
+
+GHG.gas.select <- GHG.gas %>%
+  select(Year, CO2, CH4, N2O, Fgas)
+dim(GHG.gas.select)
+
+kable(head(GHG.gas.select), caption = "First 6 years of GHG emissions by gas type (MMTCO2e)") %>%
+  kable_styling(latex_options="scale_down")
+
+GHG.gas.gather <- gather(GHG.gas.select, 'Gas', 'Concentration', -Year)
+count(GHG.gas.gather)
+
+GHG.gas.line <- ggplot(GHG.gas.gather)+
+  geom_line(aes(x= Year, y=Concentration, color = Gas))+
+  labs(y= bquote('Concentration (MMT'~CO[2]~'e)'),
+       title = bquote('US GHG Emissions by Gas Type in 1990-2017 (MMT'~CO[2]~'e)'),
+       color = '')+
+  scale_color_brewer(type='qual', direction = -1)+
+  scale_x_continuous("Year", labels = as.character(GHG.gas.gather$Year), breaks = GHG.gas.gather$Year)
+
+GHG.gas.line.facet <- ggplot(GHG.gas.gather)+
+  geom_line(aes(x= Year, y=Concentration, color = Gas))+
+  labs(y= bquote('Concentration (MMT'~CO[2]~'e)'),
+       color = '')+
+  scale_color_brewer(type='qual', direction = -1)+
+  facet_wrap(vars(Gas), scales = 'free')+
+  theme(legend.position = "none")
+
+plot_grid(GHG.gas.line,
+          GHG.gas.line.facet,
+          label_x = 0.2,
+          nrow = 2)
+```
+
+#GHG sector
+```{r}
+GHG.sector <- read.csv('./Raw Data/EPA_GHG_Sector_raw.csv')
+
+str(GHG.sector)
+colnames(GHG.sector)
+GHG.sector <- GHG.sector %>%
+  rename('Electricity_generation' = Electricity.generation)
+  #rename('ghg_elecgene' = Electricity.generation, 'ghg_transport' =Transportation, 'ghg_industry'=Industry, 'ghg_agri' =Agriculture, 'ghg_commercial' =Commercial, 'ghg_residential' =Residential)
+colnames(GHG.sector)
+
+GHG.sector.select <- GHG.sector %>%
+  select(Year, Transportation, Electricity_generation, Industry, Agriculture, Commercial,Residential)
+  #select(Year, ghg_transport, ghg_elecgene, ghg_industry, ghg_agri, ghg_commercial, ghg_residential)
+dim(GHG.sector.select)
+
+kable(head(GHG.sector.select), caption = "First 6 years of GHG emissions by sector (MMTCO2e)") %>%
+  kable_styling(latex_options="scale_down")
+
+GHG.sector.gather <- gather(GHG.sector.select, 'Sector', 'Emission', -Year)
+count(GHG.sector.gather)
+
+GHG.sector.line <- ggplot(GHG.sector.gather)+
+  geom_line(aes(x= Year, y=Emission, color = Sector))+
+  labs(y= bquote('GHG Emission (MMT'~CO[2]~'e)'),
+       title = bquote('US GHG Emissions by Gas Type in 1990-2017 (MMT'~CO[2]~'e)'),
+       color = '')+
+  scale_color_brewer(palette = 'Dark2')+
+  scale_x_continuous("Year", labels = as.character(GHG.sector.gather$Year), breaks = GHG.sector.gather$Year)
+plot(GHG.sector.line)
+
+GHG.sector.line.facet <- ggplot(GHG.sector.gather)+
+  geom_line(aes(x= Year, y=Emission, color = Sector))+
+  labs(y= bquote('GHG Emission (MMT'~CO[2]~'e)'),
+       color = '')+
+  scale_color_brewer(palette = 'Dark2')+
+  facet_wrap(vars(Sector), scales = 'free')+
+  theme(legend.position = "none")
+
+plot_grid(GHG.sector.line,
+          GHG.sector.line.facet,
+          label_x = 0.2,
+          nrow = 2)
+```
+
+#Temperature
+```{r}
+temp <- read.csv('./Raw Data/NOAA_temp_raw.csv')
+str(temp)
+colnames(temp)
+temp <- mutate(temp, Year = year(as.Date(as.yearmon(as.character(temp$Date), format = "%Y%m"))))
+str(temp)
+
+temp.select <- temp %>%
+  select(Year, Value, Anomaly)
+dim(temp.select)
+str(temp.select)
+
+kable(head(temp.select), caption = "First 6 years of US temperature data in 1990-2017 (F)") %>%
+  kable_styling(latex_options="scale_down")
+
+temp.line <- ggplot(temp.select)+
+  geom_line(aes(x= Year, y=Value))+
+  labs(y= expression("Temperature ("*~degree*F*")"),
+       title = expression("US Annual Mean Temperature in 1990-2017 ("*~degree*F*")"))+
+  scale_x_continuous("Year", labels = as.character(temp.select$Year), breaks = temp.select$Year)+
+  theme(legend.position = "none", axis.title.x = element_blank(), axis.text.x = element_blank())
+plot(temp.line)
+
+temp.select$colour <- ifelse(temp.select$Anomaly < 0, "negative","positive")
+temp.anom <- ggplot(temp.select)+
+  geom_col(aes(x=Year, y=Anomaly, fill=colour))+
+  labs(y= expression("Temperature Anomaly ("*~degree*F*")"),
+      title = expression("US Annual Temperature Anomaly in 1990-2017 ("*~degree*F*")"),
+      color = '')+
+  scale_x_continuous("Year", labels = as.character(temp.select$Year), breaks = temp.select$Year)+
+  scale_fill_manual(values=c(positive="firebrick1",negative="steelblue"))+
+  theme(legend.position = 'none')
+plot(temp.anom)
+
+plot_grid(temp.line,
+          temp.anom,
+          label_x = 0.2,
+          nrow = 2)
+```
+
+#Population
+```{r}
+ppl <- read.csv('./Raw Data/WB_pop_raw.csv')
+
+str(ppl)
+ppl.select <- ppl %>%
+  select(Year, United.States) %>%
+  filter(Year >1989 & Year < 2018)
+dim(ppl.select)
+
+colnames(ppl.select)
+ppl.select <- ppl.select %>%
+  rename('US_pop' = United.States)
+colnames(ppl.select)
+
+kable(head(ppl.select), caption = "First 6 years of US population in 1990-2017") %>%
+  kable_styling(latex_options="scale_down")
 
 ```
 
