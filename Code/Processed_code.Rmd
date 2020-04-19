@@ -256,10 +256,18 @@ kable(head(ppl.select), caption = "First 6 years of US population in 1990-2017")
 write.csv(ppl.select, row.names = FALSE, file = './Processed Data/WB_pop_processed.csv')
 ```
 
-#Save processed files
+#Analysis part - rearrange dataset
 ```{r}
+newGDP <- read.csv('./Processed Data/BEA_GDP_processed.csv', head(T))
+newelectricity <- read.csv('./Processed Data/EIA_electricity-consumption_sector_processed.csv', head(T))
+newGHGgas <- read.csv('./Processed Data/EPA_GHG_Gas_processed.csv', head(T))
+newGHGsector <- read.csv('./Processed Data/EPA_GHG_Sector_processed.csv', head(T))
+newtemp <- read.csv('./Processed Data/NOAA_temp_processed.csv', head(T))
+newpop <- read.csv('./Processed Data/WB_pop_processed.csv', head(T))
 
-
-
+allGHG <- full_join(newGHGgas,newGHGsector, by = 'Year')
+GHG_contribute <- full_join(newelectricity, newpop, by = 'Year')
+GHG_impact <- full_join(newGDP, newtemp, by = 'Year')
 ```
 
+#Analysis part - statistical tests
