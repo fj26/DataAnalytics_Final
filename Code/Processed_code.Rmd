@@ -16,6 +16,8 @@ library(zoo)
 library(knitr)
 library(kableExtra)
 library(viridis)
+library(agricolae)
+library(corrplot)
 projecttheme <- theme_light() + 
   theme(
     plot.title = element_text(color = 'dimgray', size = 12, face = 'bold'), 
@@ -111,27 +113,23 @@ GHG.gas <- GHG.gas %>%
   rename("CO2" = Carbon.dioxide, 'CH4' = Methane, 'N2O' = Nitrous.oxide, 'Fgas' = Fluorinated.gases)
 colnames(GHG.gas)
 
-GHG.gas.select <- GHG.gas %>%
-  select(Year, CO2, CH4, N2O, Fgas)
-dim(GHG.gas.select)
-
-kable(head(GHG.gas.select), caption = "First 6 years of GHG emissions by gas type (MMTCO2e)") %>%
+kable(head(GHG.gas), caption = "First 6 years of GHG emissions by gas type (MMTCO2e)") %>%
   kable_styling(latex_options="scale_down")
 
-GHG.gas.gather <- gather(GHG.gas.select, 'Gas', 'Concentration', -Year)
+GHG.gas.gather <- gather(GHG.gas, 'Gas', 'Concentration', -Year)
 count(GHG.gas.gather)
 
 GHG.gas.line <- ggplot(GHG.gas.gather)+
   geom_line(aes(x= Year, y=Concentration, color = Gas))+
-  labs(y= bquote('Concentration (MMT'~CO[2]~'e)'),
-       title = bquote('US GHG Emissions by Gas Type in 1990-2017 (MMT'~CO[2]~'e)'),
+  labs(y= bquote(bold('Concentration (MMT'~CO[2]~'e)')),
+       title = bquote(bold('US GHG Emissions by Gas Type in 1990-2017 (MMT'~CO[2]~'e)')),
        color = '')+
   scale_color_brewer(type='qual', direction = -1)+
   scale_x_continuous("Year", labels = as.character(GHG.gas.gather$Year), breaks = GHG.gas.gather$Year)
 
 GHG.gas.line.facet <- ggplot(GHG.gas.gather)+
   geom_line(aes(x= Year, y=Concentration, color = Gas))+
-  labs(y= bquote('Concentration (MMT'~CO[2]~'e)'),
+  labs(y= bquote(bold('Concentration (MMT'~CO[2]~'e)')),
        color = '')+
   scale_color_brewer(type='qual', direction = -1)+
   facet_wrap(vars(Gas), scales = 'free')+
@@ -142,7 +140,7 @@ plot_grid(GHG.gas.line,
           label_x = 0.2,
           nrow = 2)
 
-write.csv(GHG.gas.select, row.names = FALSE, file = './Processed Data/EPA_GHG_Gas_processed.csv')
+write.csv(GHG.gas, row.names = FALSE, file = './Processed Data/EPA_GHG_Gas_processed.csv')
 ```
 
 #GHG sector
@@ -169,8 +167,8 @@ count(GHG.sector.gather)
 
 GHG.sector.line <- ggplot(GHG.sector.gather)+
   geom_line(aes(x= Year, y=Emission, color = Sector))+
-  labs(y= bquote('GHG Emission (MMT'~CO[2]~'e)'),
-       title = bquote('US GHG Emissions by Gas Type in 1990-2017 (MMT'~CO[2]~'e)'),
+  labs(y= bquote(bold('GHG Emission (MMT'~CO[2]~'e)')),
+       title = bquote(bold('US GHG Emissions by Gas Type in 1990-2017 (MMT'~CO[2]~'e)')),
        color = '')+
   scale_color_brewer(palette = 'Dark2')+
   scale_x_continuous("Year", labels = as.character(GHG.sector.gather$Year), breaks = GHG.sector.gather$Year)
@@ -178,7 +176,7 @@ plot(GHG.sector.line)
 
 GHG.sector.line.facet <- ggplot(GHG.sector.gather)+
   geom_line(aes(x= Year, y=Emission, color = Sector))+
-  labs(y= bquote('GHG Emission (MMT'~CO[2]~'e)'),
+  labs(y= bquote(bold('GHG Emission (MMT'~CO[2]~'e)')),
        color = '')+
   scale_color_brewer(palette = 'Dark2')+
   facet_wrap(vars(Sector), scales = 'free')+
@@ -200,18 +198,21 @@ temp <- mutate(temp, Year = year(as.Date(as.yearmon(as.character(temp$Date), for
 str(temp)
 
 temp.select <- temp %>%
-  select(Year, Value, Anomaly)
+  select(Year, Value, Anomaly) %>%
+  mutate(Mean_all_temp =  mean(Value))
 dim(temp.select)
 str(temp.select)
 
 kable(head(temp.select), caption = "First 6 years of US temperature data in 1990-2017 (F)") %>%
   kable_styling(latex_options="scale_down")
 
-temp.line <- ggplot(temp.select)+
-  geom_line(aes(x= Year, y=Value))+
+temp.line <- ggplot(temp.select, aes(x= Year))+
+  geom_line(aes(y=Value))+
+  geom_line(aes(y=Mean_all_temp, color= 'red'))+
   labs(y= expression("Temperature ("*~degree*F*")"),
        title = expression("US Annual Mean Temperature in 1990-2017 ("*~degree*F*")"))+
   scale_x_continuous("Year", labels = as.character(temp.select$Year), breaks = temp.select$Year)+
+  geom_text(x = 2017, y = 53, label = "Average Temperature for 18 Years", hjust = 1, size = 3, color = 'red')+
   theme(legend.position = "none", axis.title.x = element_blank(), axis.text.x = element_blank())
 plot(temp.line)
 
@@ -271,3 +272,145 @@ GHG_impact <- full_join(newGDP, newtemp, by = 'Year')
 ```
 
 #Analysis part - statistical tests
+##1. normal distrbution GHG concentration
+```{r}
+summary(allGHG)
+
+shapiro.test(allGHG$Total)
+ggplot(allGHG, aes(x=Total))+
+  geom_histogram()
+qqnorm(allGHG$Total);qqline(allGHG$Total)
+
+allsample <- t.test(allGHG, mu=mean(allGHG$Total), alternative = 'less')
+allsample
+
+```
+
+##2. Does total electricity consumption differ among sectors?
+```{r}
+newelectricity.gather <- gather(newelectricity, 'Sector', 'Emission', -Year)
+count(newelectricity.gather)
+
+newelectricity.gather$Emission <- str_replace_all(newelectricity.gather$Emission,
+pattern = "([,])", replacement = "")
+newelectricity.gather$Emission <- as.numeric(newelectricity.gather$Emission)
+str(newelectricity.gather)
+#elec.gather2 <- elec.gather %>%
+ # filter(!is.na(Electricity_Consumption))
+
+#One-way Anova, test for normality
+shapiro.test(newelectricity.gather$Emission[newelectricity.gather$Sector=='elec_residential'])
+
+shapiro.test(newelectricity.gather$Emission[newelectricity.gather$Sector=='elec_commercial'])
+
+shapiro.test(newelectricity.gather$Emission[newelectricity.gather$Sector=='elec_industrial'])
+
+shapiro.test(newelectricity.gather$Emission[newelectricity.gather$Sector=='elec_transport'])
+
+qqnorm(newelectricity.gather$Emission); qqline(newelectricity.gather$Emission)
+
+#Test for equal variance
+bartlett.test(newelectricity.gather$Emission ~ newelectricity.gather$Sector)
+newelectricity.anova <- lm(data = newelectricity.gather, Emission ~ Sector)
+summary(newelectricity.anova)
+
+#Checking model fit and assumptions
+# ANOVA is robust against departures from normality.
+par(mfrow = c(2,2), mar=c(1,1,1,1))
+plot(newelectricity.anova)
+
+newelectricity.anova2 <- aov(data = newelectricity.gather, Emission ~ Sector)
+summary(newelectricity.anova2)
+# Post-hoc test
+TukeyHSD(newelectricity.anova2)
+
+#Extract groupings for pairwise relationships
+newelectricity.groups <- HSD.test(newelectricity.anova2, "Sector", group = TRUE)
+newelectricity.groups
+
+newelectricity.graph <- ggplot(newelectricity.gather, aes(x = Sector, y = Emission)) +
+  geom_boxplot() +
+  theme(axis.text.x = element_text(angle = 45, hjust = 1)) + stat_summary(geom = "text", fun.y = max, vjust = -1, size = 3.5, label = c('a','b','c','d')) +
+  labs(x = "Sector", y = "Emission") 
+print(newelectricity.graph)
+
+
+```
+
+##3. Does GHG emission differ among sectors? (Lec12 - multiple regression)
+```{r}
+GHG.regression <- lm(data=allGHG, Total~ Transportation +Electricity_generation+Industry+Agriculture+Commercial+Residential)
+summary(GHG.regression)
+step(GHG.regression)
+
+cor.test(allGHG$Total,allGHG$Transportation)
+cor.test(allGHG$Total,allGHG$Electricity_generation)
+cor.test(allGHG$Total,allGHG$Industry)
+cor.test(allGHG$Total,allGHG$Agriculture)
+cor.test(allGHG$Total,allGHG$Commercial)
+cor.test(allGHG$Total,allGHG$Residential)
+
+par(mfrow = c(2,2), mar=c(1,1,1,1))
+plot(GHG.regression)
+
+allGHG.bysector <- allGHG %>%
+  select(Total:Residential)
+allGHG.corr <- cor(allGHG.bysector)
+corrplot(allGHG.corr, method = "circle", tl.cex = 0.5)
+```
+
+
+##4. Does GHG emission differ among electricity comsupmtions by sector?
+```{r}
+##linear regression
+GHG_contribute$elec_residential <- str_replace_all(GHG_contribute$elec_residential,
+pattern = "([,])", replacement = "")
+GHG_contribute$elec_residential <- as.numeric(GHG_contribute$elec_residential)
+
+GHG_contribute$elec_commercial <- str_replace_all(GHG_contribute$elec_commercial,
+pattern = "([,])", replacement = "")
+GHG_contribute$elec_commercial <- as.numeric(GHG_contribute$elec_commercial)
+
+GHG_contribute$elec_industrial <- str_replace_all(GHG_contribute$elec_industrial,
+pattern = "([,])", replacement = "")
+GHG_contribute$elec_industrial <- as.numeric(GHG_contribute$elec_industrial)
+
+GHG_contribute$elec_transport <- str_replace_all(GHG_contribute$elec_transport,
+pattern = "([,])", replacement = "")
+GHG_contribute$elec_transport <- as.numeric(GHG_contribute$elec_transport)
+
+elec.regression <- lm(allGHG$Total ~GHG_contribute$elec_residential + GHG_contribute$elec_commercial + GHG_contribute$elec_industrial + GHG_contribute$elec_transport)
+summary(elec.regression)
+plot(elec.regression)
+
+step(elec.regression)
+
+elecmodel <- lm(formula = allGHG$Total ~ GHG_contribute$elec_residential + 
+    GHG_contribute$elec_transport)
+summary(elecmodel)
+plot(elecmodel)
+
+```
+
+##5. Is population significant to GHG emissions ?
+```{r}
+pop.regression <- lm(allGHG$Total ~GHG_contribute$US_pop)
+summary(pop.regression)
+cor.test(allGHG$Total,GHG_contribute$US_pop)
+plot(pop.regression)
+
+par(mfrow = c(1,1))
+
+contrib.all <- full_join(allGHG, newpop, by = 'Year')
+# Plot the regression
+GHGpop.plot <-ggplot(contrib.all, aes(x = US_pop, y = Total)) + 
+  geom_line()+
+  labs(y= bquote(bold('GHG Emission (MMT'~CO[2]~'e)')),
+       x= 'Population',
+       color = '')+
+  geom_vline(xintercept = contrib.all$US_pop[which.max(contrib.all$Total)], color = "#f20505", lty = 2, size = 0.9)+
+  geom_text(y = 6400, x = 3.0e+08, label = 'Highest GHG Concentration Year: 2007', hjust = 1, size = 3, color = 'red')
+print(GHGpop.plot)
+
+```
+
