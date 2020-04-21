@@ -2,8 +2,10 @@
 title: "Processed code"
 author: "Vicky Jia"
 date: "4/17/2020"
-output: pdf_document
-editor_options: 
+output:
+  word_document: default
+  pdf_document: default
+editor_options:
   chunk_output_type: console
 ---
 ```{r}
@@ -18,6 +20,8 @@ library(kableExtra)
 library(viridis)
 library(agricolae)
 library(corrplot)
+library(trend)
+library(modifiedmk)
 projecttheme <- theme_light() + 
   theme(
     plot.title = element_text(color = 'dimgray', size = 12, face = 'bold'), 
@@ -206,8 +210,9 @@ str(temp.select)
 kable(head(temp.select), caption = "First 6 years of US temperature data in 1990-2017 (F)") %>%
   kable_styling(latex_options="scale_down")
 
-temp.line <- ggplot(temp.select, aes(x= Year))+
-  geom_line(aes(y=Value))+
+temp.line <- ggplot(temp.select, aes(x= Year, y=Value))+
+  geom_point()+
+  geom_line()+
   geom_line(aes(y=Mean_all_temp, color= 'red'))+
   labs(y= expression("Temperature ("*~degree*F*")"),
        title = expression("US Annual Mean Temperature in 1990-2017 ("*~degree*F*")"))+
@@ -272,11 +277,25 @@ GHG_impact <- full_join(newGDP, newtemp, by = 'Year')
 ```
 
 #Analysis part - statistical tests
+lm - look at explainations here https://feliperego.github.io/blog/2015/10/23/Interpreting-Model-Output-In-R
 ##1. normal distrbution GHG concentration
+shapiro test: two p-values are greater than the significance level 0.05 implying that the distribution of the data are not significantly different from normal distribution. In other words, we can assume the normality.
 ```{r}
 summary(allGHG)
 
 shapiro.test(allGHG$Total)
+shapiro.test(allGHG$CO2)
+shapiro.test(allGHG$CH4)
+shapiro.test(allGHG$N2O)
+shapiro.test(allGHG$Fgas)
+
+shapiro.test(allGHG$Transportation)
+shapiro.test(allGHG$Electricity_generation)
+shapiro.test(allGHG$Industry)
+shapiro.test(allGHG$Agriculture)
+shapiro.test(allGHG$Commercial)
+shapiro.test(allGHG$Residential)
+
 ggplot(allGHG, aes(x=Total))+
   geom_histogram()
 qqnorm(allGHG$Total);qqline(allGHG$Total)
@@ -286,7 +305,12 @@ allsample
 
 ```
 
-##2. Does total electricity consumption differ among sectors?
+##2. Does total electricity consumption differ among sectors (category vs discrete)?
+Shapiro-Wilk test can be performed as follow:
+Null hypothesis: the data are normally distributed
+Alternative hypothesis: the data are not normally distributed
+
+lm: If the p-value is less than 0.05, we reject the null hypothesis that there's no difference between the means and conclude that a significant difference does exist.
 ```{r}
 newelectricity.gather <- gather(newelectricity, 'Sector', 'Emission', -Year)
 count(newelectricity.gather)
@@ -310,8 +334,11 @@ shapiro.test(newelectricity.gather$Emission[newelectricity.gather$Sector=='elec_
 qqnorm(newelectricity.gather$Emission); qqline(newelectricity.gather$Emission)
 
 #Test for equal variance
+##a small p-value for the intercept and the slope indicates that we can reject the null hypothesis which allows us to conclude that there is a relationship between speed and distance.
 bartlett.test(newelectricity.gather$Emission ~ newelectricity.gather$Sector)
-newelectricity.anova <- lm(data = newelectricity.gather, Emission ~ Sector)
+
+
+newelectricity.anova <- aov(data = newelectricity.gather, Emission ~ Sector)
 summary(newelectricity.anova)
 
 #Checking model fit and assumptions
@@ -319,30 +346,31 @@ summary(newelectricity.anova)
 par(mfrow = c(2,2), mar=c(1,1,1,1))
 plot(newelectricity.anova)
 
-newelectricity.anova2 <- aov(data = newelectricity.gather, Emission ~ Sector)
-summary(newelectricity.anova2)
-# Post-hoc test
-TukeyHSD(newelectricity.anova2)
+# Post-hoc test # Run a post-hoc test for pairwise differences
+TukeyHSD(newelectricity.anova)
 
 #Extract groupings for pairwise relationships
-newelectricity.groups <- HSD.test(newelectricity.anova2, "Sector", group = TRUE)
+newelectricity.groups <- HSD.test(newelectricity.anova, "Sector", group = TRUE)
 newelectricity.groups
 
 newelectricity.graph <- ggplot(newelectricity.gather, aes(x = Sector, y = Emission)) +
   geom_boxplot() +
-  theme(axis.text.x = element_text(angle = 45, hjust = 1)) + stat_summary(geom = "text", fun.y = max, vjust = -1, size = 3.5, label = c('a','b','c','d')) +
+  theme(axis.text.x = element_text(angle = 45, hjust = 1)) + stat_summary(geom = "text", fun.y = max, vjust = -1, size = 3.5, label = c('b','c','a','d')) +
   labs(x = "Sector", y = "Emission") 
 print(newelectricity.graph)
 
 
 ```
 
-##3. Does GHG emission differ among sectors? (Lec12 - multiple regression)
+##Move up--3. Are sectoral GHG emissions significantly different from each other? How sectoral emissions contribute to total emissions (correlation)? (Lec12 - multiple regression)
+cor.test: If the p-value is < 5%, then the correlation between x and y is significant.
 ```{r}
-GHG.regression <- lm(data=allGHG, Total~ Transportation +Electricity_generation+Industry+Agriculture+Commercial+Residential)
+##sectoral emissions differ from each other?
+GHG.regression <- lm(data=allGHG, Transportation~ Electricity_generation+Industry+Agriculture+Commercial+Residential)
 summary(GHG.regression)
 step(GHG.regression)
 
+#how contribute to total emission - correlation
 cor.test(allGHG$Total,allGHG$Transportation)
 cor.test(allGHG$Total,allGHG$Electricity_generation)
 cor.test(allGHG$Total,allGHG$Industry)
@@ -353,32 +381,32 @@ cor.test(allGHG$Total,allGHG$Residential)
 par(mfrow = c(2,2), mar=c(1,1,1,1))
 plot(GHG.regression)
 
+par(mfrow = c(1,1))
 allGHG.bysector <- allGHG %>%
   select(Total:Residential)
 allGHG.corr <- cor(allGHG.bysector)
-corrplot(allGHG.corr, method = "circle", tl.cex = 0.5)
+corrplot(allGHG.corr, method = "ellipse", tl.cex = 0.5)
 ```
 
 
-##4. Does GHG emission differ among electricity comsupmtions by sector?
+##4. Are electricity comsupmtions in some sectors significant to total GHG emissions?
+lm: If the p-value is less than 0.05, we reject the null hypothesis which allows us to conclude that there is a relationship between speed and distance.
 ```{r}
-##linear regression
+##linear regression - electricity consumption relation to total GHG emissions
 GHG_contribute$elec_residential <- str_replace_all(GHG_contribute$elec_residential,
 pattern = "([,])", replacement = "")
 GHG_contribute$elec_residential <- as.numeric(GHG_contribute$elec_residential)
-
 GHG_contribute$elec_commercial <- str_replace_all(GHG_contribute$elec_commercial,
 pattern = "([,])", replacement = "")
 GHG_contribute$elec_commercial <- as.numeric(GHG_contribute$elec_commercial)
-
 GHG_contribute$elec_industrial <- str_replace_all(GHG_contribute$elec_industrial,
 pattern = "([,])", replacement = "")
 GHG_contribute$elec_industrial <- as.numeric(GHG_contribute$elec_industrial)
-
 GHG_contribute$elec_transport <- str_replace_all(GHG_contribute$elec_transport,
 pattern = "([,])", replacement = "")
 GHG_contribute$elec_transport <- as.numeric(GHG_contribute$elec_transport)
 
+par(mfrow = c(2,2), mar=c(1,1,1,1))
 elec.regression <- lm(allGHG$Total ~GHG_contribute$elec_residential + GHG_contribute$elec_commercial + GHG_contribute$elec_industrial + GHG_contribute$elec_transport)
 summary(elec.regression)
 plot(elec.regression)
@@ -390,27 +418,138 @@ elecmodel <- lm(formula = allGHG$Total ~ GHG_contribute$elec_residential +
 summary(elecmodel)
 plot(elecmodel)
 
+
 ```
 
-##5. Is population significant to GHG emissions ?
+##5. Is population growth significant to GHG emissions ?
+cor.test: If the p-value is < 5%, then the correlation between x and y is significant.
 ```{r}
+shapiro.test(GHG_contribute$US_pop) #normal
+
 pop.regression <- lm(allGHG$Total ~GHG_contribute$US_pop)
 summary(pop.regression)
-cor.test(allGHG$Total,GHG_contribute$US_pop)
+cor.test(allGHG$Total,GHG_contribute$US_pop) #not significant, no relationship, same as lm
 plot(pop.regression)
 
 par(mfrow = c(1,1))
-
-contrib.all <- full_join(allGHG, newpop, by = 'Year')
+ppl.all <- full_join(allGHG, newpop, by = 'Year')
 # Plot the regression
-GHGpop.plot <-ggplot(contrib.all, aes(x = US_pop, y = Total)) + 
+GHGpop.plot <-ggplot(ppl.all, aes(x = US_pop, y = Total)) + 
   geom_line()+
   labs(y= bquote(bold('GHG Emission (MMT'~CO[2]~'e)')),
        x= 'Population',
        color = '')+
-  geom_vline(xintercept = contrib.all$US_pop[which.max(contrib.all$Total)], color = "#f20505", lty = 2, size = 0.9)+
+  geom_vline(xintercept = ppl.all$US_pop[which.max(ppl.all$Total)], color = "#f20505", lty = 2, size = 0.9)+
   geom_text(y = 6400, x = 3.0e+08, label = 'Highest GHG Concentration Year: 2007', hjust = 1, size = 3, color = 'red')
 print(GHGpop.plot)
 
+```
+
+#Part 2 - impacts
+##Move up--1. Are emissions of different types of GHGs related to each other?
+lm: a small p-value for the intercept and the slope indicates that we can reject the null hypothesis which allows us to conclude that there is a relationship between speed and distance.
+```{r}
+GHG.gas.regression <- lm(data=allGHG, CO2~ CH4+N2O+Fgas)
+summary(GHG.gas.regression)
+step(GHG.gas.regression)
+
+par(mfrow = c(2,2), mar=c(1,1,1,1))
+plot(GHG.gas.regression)
+
+GHG.gas.regression.improve <- lm(formula = CO2 ~ CH4 + N2O, data = allGHG)
+summary(GHG.gas.regression.improve)
+plot(GHG.gas.regression.improve)
+
+par(mfrow = c(1,1))
+
+allGHG.bygas <- allGHG %>%
+  select(CO2:Fgas)
+
+cor.test(allGHG.bygas$CO2, allGHG.bygas$CH4)
+cor.test(allGHG.bygas$CO2, allGHG.bygas$N2O)
+cor.test(allGHG.bygas$CO2, allGHG.bygas$Fgas)
+#Visualize this result
+allGHG.gas.corr <- cor(allGHG.bygas)
+corrplot(allGHG.gas.corr, method = "ellipse", tl.cex = 0.5)
+```
+
+##2. GHGs and temperature 
+which sector emission is significant to temperature anomaly?
+```{r}
+shapiro.test(newtemp$Anomaly)
+#time series analysis- Mann-Kendall
+#The null hypothesis of the test is that there is no trend in the data and the alternative hypothesis is that the data represents a monotonic trend.
+
+#If the p-value is less than 0.05, we reject the null hypothesis.
+GHGtemp_data<- full_join(allGHG, newtemp, by='Year')
+GHGtemp.ts <- ts(GHGtemp_data$Value, start=c(1990), end=c(2017), frequency=1)
+class(GHGtemp.ts)
+GHGtemp.ts.vector <- as.numeric(GHGtemp.ts)
+class(GHGtemp.ts.vector)
+GHGtemp.trend <- mmkh(GHGtemp.ts.vector, ci=0.95)
+GHGtemp.trend
+summary(GHGtemp.trend)
+
+
+#linear regression
+##a p-value of 5% or less is a good cut-off point. In our model example, the p-values are very close to zero. Note the ‘signif. Codes’ associated to each estimate. Three stars (or asterisks) represent a highly significant p-value. Consequently, a small p-value for the intercept and the slope indicates that we can reject the null hypothesis which allows us to conclude that there is a relationship between speed and distance.
+GHG.temp.regression <- lm(GHGtemp_data,formula = Anomaly~  Transportation+Electricity_generation+Industry+Agriculture+Commercial+Residential)
+summary(GHG.temp.regression)
+
+par(mfrow = c(2,2), mar=c(1,1,1,1))
+plot(GHG.temp.regression)
+
+step(GHG.temp.regression)
+
+GHG.temp.regression.improve <- lm(formula = Anomaly ~ Transportation + Agriculture + Commercial + Residential, data = GHGtemp_data)
+summary(GHG.temp.regression.improve)
+
+plot(GHG.temp.regression.improve)
+par(mfrow = c(1,1))
+
+GHGsector.temp <- GHGtemp_data %>%
+  select(Transportation:Residential, Anomaly)
+
+cor.test(GHGsector.temp$Anomaly, GHGsector.temp$Transportation)
+cor.test(GHGsector.temp$Anomaly, GHGsector.temp$Electricity_generation)
+cor.test(GHGsector.temp$Anomaly, GHGsector.temp$Industry)
+cor.test(GHGsector.temp$Anomaly, GHGsector.temp$Agriculture)
+cor.test(GHGsector.temp$Anomaly, GHGsector.temp$Commercial)
+cor.test(GHGsector.temp$Anomaly, GHGsector.temp$Residential)
+
+GHGsector.temp.corr <- cor(GHGsector.temp)
+corrplot(GHGsector.temp.corr, method = "ellipse", tl.cex = 0.5)
+```
+
+##3. GHG and GDP
+Is GHG emission significant to GDP growth?
+```{r}
+shapiro.test(newGDP$GDP)
+
+GHGgdp_data<- full_join(allGHG, newGDP, by='Year')
+GHGgdp.ts <- ts(GHGgdp_data$GDP, start=c(1990), end=c(2017), frequency=1)
+class(GHGgdp.ts)
+GHGgdp.ts.vector <- as.numeric(GHGgdp.ts)
+class(GHGgdp.ts.vector)
+GHGgdp.trend <- mmkh(GHGgdp.ts.vector, ci=0.95)
+GHGgdp.trend
+summary(GHGtemp.trend)
+
+GDP.anova <- lm(data=GHGgdp_data, Total~GDP+Personal_consumption)
+summary(GDP.anova) 
+
+par(mfrow = c(2,2), mar=c(1,1,1,1))
+plot(GDP.anova)
+
+par(mfrow = c(1,1))
+
+step(GDP.anova)
+
+# Add a line and standard error for the linear regression
+GHGgdp.plot <- ggplot(GHGgdp_data, aes(x = Total, y = GDP)) + 
+  geom_smooth(method = "lm") +
+  labs(y= 'GDP (US$ billion)', x= bquote(bold('Total GHG Emission (MMT'~CO[2]~'e)')))+
+  geom_point()
+print(GHGgdp.plot)
 ```
 
