@@ -1,0 +1,21 @@
+Dataset,Variables,Variable Unit,Data Source
+BEA_GDP,Year,YYYY,US Bureau of Economic Analysis
+,Type,Name,
+,Value,Billions of dollars,
+EIA_electricity-consumption_sector,Year,YYYY,US Energy Information Administration
+,State,Name,
+,Industry.Sector.Category,Name,
+,Sector,Name,
+,Electricity_Consumption,Megawatthours,
+EPA_GHG_Gas,Year,YYYY,EPA Annual Inventory of U.S. Greenhouse Gas Emissions and Sinks.
+,Gas,Name,
+,Concentration,Million metric tons of carbon dioxide equivalents   ,
+EPA_GHG_Sector,Year,YYYY,EPA Annual Inventory of U.S. Greenhouse Gas Emissions and Sinks.
+,Sector,Name,
+,Concentration,Million metric tons of carbon dioxide equivalents   ,
+NOAA_Temp,Date,YYYYMM,NOAA National Centers for Environmental Information Climate at a Glance 
+,Value,Fahrenheit  ,
+,Anomaly,Fahrenheit  ,
+WB_pop,Year,YYYY,World Bank
+,Country,Name,
+,Population,person,

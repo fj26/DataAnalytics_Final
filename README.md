@@ -167,7 +167,7 @@ Total: Sum of megawatthours of electricity above
 
 
 #### EPA_GHG_Gas_raw.csv:
-US GHG emission data by gas types in all sectors from 1990-2017 provided by EPA's annual Inventory of U.S. Greenhouse Gas Emissions and Sinks.
+US GHG emission data by gas types in all sectors from 1990-2017 provided by EPA's Annual Inventory of U.S. Greenhouse Gas Emissions and Sinks.
 
 Column names without descriptors are self-explanatory.
 
