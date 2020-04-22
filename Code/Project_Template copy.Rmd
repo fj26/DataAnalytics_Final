@@ -1,0 +1,190 @@
+---
+output: 
+  pdf_document:
+    keep_tex: yes
+    fig_caption: yes
+    number_sections: yes
+geometry: margin=2.54cm
+title: "Factors and Impacts of Greenhouse Gas Emissiosn in US from 1990-2017"
+subtitle: "Web address for GitHub repository"
+author: "Vicky Jia"
+fontsize: 12pt
+mainfont: Times New Roman
+editor_options: 
+  chunk_output_type: console
+---
+
+\newpage
+\tableofcontents 
+\newpage
+\listoftables 
+\newpage
+\listoffigures 
+\newpage
+
+```{r setup, include=FALSE}
+setwd("~/DataAnalytics_Final")
+library(tidyverse)
+library(cowplot)
+library(lubridate)
+library(zoo)
+library(knitr)
+library(kableExtra)
+library(viridis)
+library(agricolae)
+library(corrplot)
+library(trend)
+library(modifiedmk)
+projecttheme <- theme_light() + 
+  theme(
+    plot.title = element_text(color = 'dimgray', size = 12, face = 'bold'), 
+    axis.text = element_text(color = "black", size= 10), 
+    axis.title = element_text(color = 'black', size = 11, face = 'bold'),
+    axis.text.x = element_text(angle = 45, hjust = 1),
+    legend.text = element_text(size = 10),
+    legend.position = "bottom")
+theme_set(projecttheme)
+
+GDP <- read.csv('./Raw Data/BEA_GDP_raw.csv')
+electric <- read.csv('./Raw Data/EIA_electricity-consumption_sector_raw.csv')
+GHG.gas <- read.csv('./Raw Data/EPA_GHG_Gas_raw.csv')
+GHG.sector <- read.csv('./Raw Data/EPA_GHG_Sector_raw.csv')
+temp <- read.csv('./Raw Data/NOAA_temp_raw.csv')
+ppl <- read.csv('./Raw Data/WB_pop_raw.csv')
+structure <- read.csv('./Processed Data/Processed_Data_Structure.csv')
+
+```
+
+
+#1. Rationale and Research Questions
+
+Global warming resulted from greenhouse gas (GHG) emissions is one of the biggest challenges to human beings. While IPCC in its latest special report warns people the critial consequences of 1.5-degree-Celcius temperature increase from the pre-industrial level, the average global temperature on Earth has already increased by about 0.8° Celsius (1.4° Fahrenheit) since 1880. 
+
+In the United States, in the period of 1990-2017, the temperature increase and GHG emissions have been greatly contribetd by the energy sector. This was attributed to the increase electricity consumptions in all sectors by more people, and electricity generation primarily relies on fossil-fuel combustions. In addition to temperature increase, the economic features also have significant changes along the increasing GHG emissions and electricity consumption in the meantime. Understanding environmental and socioeconomic impacts of GHG emissions is significant to policy makers to consider long-term decision making. Therefore, this project examines the impacts of energy consumptions and demographic changes on GHG emissions, as well as further investigates the environmental and economic effects of GHG emissions in the United States from 1990 to 2017. 
+
+Specifically, this project aims to study factors that might contribute to GHG emissions guided by the following questions:
+
+1. What were impacts of US electricity consumption changes on GHG emissions from 1990 to 2017? What sectors of electricity econsumption were significant to GHG emissions in these 18 years?
+2. Was the population growth a signifant factor in affecting GHG emissisions in this period?
+
+Following up with GHG emission causes, this project will then explore the impacts of GHG emissions in US from 1990 to 2017 guided by the following questions: 
+
+3. Which sectors were more significant to temperature anomalies in this period?
+4. Was the economic development in this period, namely gross domestic product (GDP) and personal consumption expenditures, significantly realted to the GHG emissions? 
+
+\newpage
+
+#2. Dataset Information
+
+## Raw Database Information
+There were 6 datasets used in this project retrieved from various websites. Detailed criteria to collect these raw data in csv file format are listed below. 
+
+### BEA_GDP_raw.csv:
+US annual gross domestic production and personal consumption expenditures data from 1990-2017.Data were retrieved from US Bureau of Economic Analysis National Income and Product Accounts (NIPA) Interactive Data Tables tool. Data were transposed by the investigator.       
+(https://apps.bea.gov/iTable/iTable.cfm?reqid=19&step=2#reqid=19&step=2&isuri=1&1921=survey accessed on 2020-04-11.)
+
+The following selections were made:       
+*First Year: 1990-A&Q       
+*Last Year: 2017-A&Q        
+*Scale: billion           
+*Series: Annual
+
+
+### EIA_electricity-consumption_sector_raw.csv:
+The annual retail sales of electricity to ultimate customers by sector, by state, by provider from 1990 to 2018 in US. The data was retrieved from Annual Electric Power Industry Report, Form EIA-861 detailed data files from US Energy Information Administration.
+
+(https://www.eia.gov/electricity/data/state/sales_annual.xlsx accessed on 2020-04-11.)
+
+
+### EPA_GHG_Gas_raw.csv:
+US GHG emission data by gas types in all sectors from 1990-2017 provided by EPA's annual Inventory of U.S. Greenhouse Gas Emissions and Sinks. Data was retrieved from US EPA Greenhouse Gas Inventory Data Explorer. Data were transposed by the investigator.       
+(https://cfpub.epa.gov/ghgdata/inventoryexplorer/#allsectors/allgas/gas/all accessed on 2020-04-11.)
+
+The following selections were made:         
+*Sector: All sectors          
+*Greenhouse gas: All gases        
+*Break out by: Gas        
+*Year: All years
+
+
+### EPA_GHG_Sector_raw.csv:
+GHG emission data by economic sectors for all greenhouse gases from 1990-2017 provided by EPA's annual Inventory of U.S. Greenhouse Gas Emissions and Sinks. Data was retrieved from US EPA Greenhouse Gas Inventory Data Explorer. Data were transposed by the investigator.        
+(https://cfpub.epa.gov/ghgdata/inventoryexplorer/#allsectors/allgas/econsect/all accessed on 2020-04-11.)
+
+The following selections were made: 
+*Sector: All sectors          
+*Greenhouse gas: All gases        
+*Break out by: Economic sector        
+*Year: All years
+
+
+### NOAA_temp_raw.csv:
+US mean annual temperature and temperature anomalies from 1990 to 2017. Data was retrieved from NOAA National Centers for Environmental Information Climate at a Glance.       
+(https://www.ncdc.noaa.gov/cag/national/time-series/110/tavg/ann/12/1990-2017?base_prd=true&begbaseyear=1901&endbaseyear=2000, accessed on 2020-04-11.)
+
+The following selections were made:       
+*Parameter: Average Temperature       
+*Time Scale: Annual         
+*Start Year: 1990         
+*End Year: 2017         
+*Display Base Period: Start: 1990, End: 2017        
+
+
+### WB_pop_raw.csv:
+Total annual population data from 1960-2018 retrieved from World Bank dataset. Data were transposed by the investigator.       
+(https://data.worldbank.org/indicator/SP.POP.TOTL?locations=US accessed on 2020-04-11.)
+
+The following selections were made in the searching window:       
+*Population, total          
+*United States
+
+## Data Structure
+The raw data collected from some databases are beyond the scope of this project, so these datasets were wrangled to fit to the objective of this project. To provide of an overview of the data structure of each raw dataset, raw data were reorganized by gathering same types of data to one column together. Table 1 summarzies the data structure for all raw datasets used in this project after being gathered These datasets are saved in "Processed Data" folder.
+
+The specific content of each dataset and the detailed process of reframing each raw dataset to meet the objective of this project are introduced in Chapter 3, Exploratory Analysis. 
+```{r echo = FALSE, message=FALSE, warning=FALSE}
+GDPraw.gather <- gather(GDP, 'Type', 'Value', -Year)
+write.csv(GDPraw.gather, row.names = FALSE, file = './Processed Data/BEA_GDP_structure.csv')
+elecraw.gather <- gather(electric, 'Sector', 'Electricity_Consumption', Residential:Total)
+write.csv(elecraw.gather, row.names = FALSE, file = './Processed Data/EIA_electricity-consumption_sector_structure.csv')
+GHG.gas.raw.gather <- gather(GHG.gas, 'Gas', 'Concentration', -Year)
+write.csv(GHG.gas.raw.gather, row.names = FALSE, file = './Processed Data/EPA_GHG_Gas_structure.csv')
+GHG.sector.raw.gather <- gather(GHG.sector, 'Sector', 'Emission', -Year)
+write.csv(GHG.sector.raw.gather, row.names = FALSE, file = './Processed Data/EPA_GHG_Sector_structure.csv')
+write.csv(temp, row.names = FALSE, file = './Processed Data/NOAA_temp_structure.csv')
+ppl.raw.gather <- gather(ppl, 'Country', 'Population', -Year)
+write.csv(ppl.raw.gather, row.names = FALSE, file = './Processed Data/WB_pop_structure.csv')
+
+kable(structure, caption = "Table 1: Summary of Data Structure ") %>%
+  kable_styling(latex_options="scale_down")
+```
+
+
+\newpage
+
+# Exploratory Analysis 
+
+
+
+\newpage
+
+# Analysis
+
+
+
+## Question 1: <insert specific question here and add additional subsections for additional questions below, if needed>
+
+## Question 2: 
+
+
+
+
+\newpage
+
+# Summary and Conclusions
+
+
+\newpage
+
+# References
+<add references here if relevant, otherwise delete this section> 
