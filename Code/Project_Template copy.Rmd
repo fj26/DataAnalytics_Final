@@ -56,7 +56,7 @@ structure <- read.csv('./Processed Data/Processed_Data_Structure.csv')
 ```
 
 
-#1. Rationale and Research Questions
+#Rationale and Research Questions
 
 Global warming resulted from greenhouse gas (GHG) emissions is one of the biggest challenges to human beings. While IPCC in its latest special report warns people the critial consequences of 1.5-degree-Celcius temperature increase from the pre-industrial level, the average global temperature on Earth has already increased by about 0.8° Celsius (1.4° Fahrenheit) since 1880. 
 
@@ -74,7 +74,7 @@ Following up with GHG emission causes, this project will then explore the impact
 
 \newpage
 
-#2. Dataset Information
+#Dataset Information
 
 ## Raw Database Information
 There were 6 datasets used in this project retrieved from various websites. Detailed criteria to collect these raw data in csv file format are listed below. 
@@ -142,7 +142,7 @@ The following selections were made in the searching window:
 The raw data collected from some databases are beyond the scope of this project, so these datasets were wrangled to fit to the objective of this project. To provide of an overview of the data structure of each raw dataset, raw data were reorganized by gathering same types of data to one column together. Table 1 summarzies the data structure for all raw datasets used in this project after being gathered These datasets are saved in "Processed Data" folder.
 
 The specific content of each dataset and the detailed process of reframing each raw dataset to meet the objective of this project are introduced in Chapter 3, Exploratory Analysis. 
-```{r echo = FALSE, message=FALSE, warning=FALSE}
+```{r echo = FALSE, message = FALSE, warning = FALSE}
 GDPraw.gather <- gather(GDP, 'Type', 'Value', -Year)
 write.csv(GDPraw.gather, row.names = FALSE, file = './Processed Data/BEA_GDP_structure.csv')
 elecraw.gather <- gather(electric, 'Sector', 'Electricity_Consumption', Residential:Total)
@@ -155,24 +155,489 @@ write.csv(temp, row.names = FALSE, file = './Processed Data/NOAA_temp_structure.
 ppl.raw.gather <- gather(ppl, 'Country', 'Population', -Year)
 write.csv(ppl.raw.gather, row.names = FALSE, file = './Processed Data/WB_pop_structure.csv')
 
-kable(structure, caption = "Table 1: Summary of Data Structure ") %>%
+kable(structure, caption = "Summary of Data Structure ") %>%
   kable_styling(latex_options="scale_down")
 ```
-
 
 \newpage
 
 # Exploratory Analysis 
+Some raw datasets are at global scale, or have longer temporal ranges, which are beyond the scope of this project. Also, some discrete variables were downloaded as characters, which could not be adopted by some statistical models. Therefore, thse datasets were first wrangled to focus on US region in the period between 1990 and 2017. This section demonsrates the process of data wrangling in details, as well as presents the overview of the content of each dataset.
+
+##US GDP
+
+```{r warning = FALSE}
+str(GDP)
+GDP <- GDP %>%
+  rename('GDP' = 'Gross.domestic.product', 'Personal_consumption' = 'Personal.consumption.expenditures')
+
+GDP.select<- GDP %>%
+  filter(Year>1989 & Year < 2018) %>%
+  select(Year, GDP, Personal_consumption)
+dim(GDP.select)
 
 
+```
+
+```{r echo = FALSE, message = FALSE, warning = FALSE, fig.cap= 'US Economic Features in 1990-2017'}
+#kable(head(GDP.select), caption = "First 6 rows of GDP and personal consumption (billion US$)") %>%
+ # kable_styling(latex_options="scale_down")
+
+GDP.gather <- gather(GDP.select, 'Type', 'Value', -Year)
+count(GDP.gather)
+
+GDP.line <- ggplot(GDP.gather)+
+  geom_line(aes(x= Year, y=Value, color = Type))+
+  labs(y= 'US$ (billion)',
+       color = '')+
+  scale_color_brewer(type='qual', direction = -1)+
+  scale_x_continuous("Year", labels = as.character(GDP.gather$Year), breaks = GDP.gather$Year)
+print(GDP.line)
+```
 
 \newpage
 
-# Analysis
+##US Electricity Consumption
+
+```{r warning = FALSE}
+str(electric)
+electric <- electric %>%
+  rename('Industry_Sector' = Industry.Sector.Category, 'elec_residential' = Residential, 'elec_commercial' = Commercial, 'elec_industrial' = Industrial, 'elec_transport' =Transportation)
+colnames(electric)
+
+elec.select <- electric %>%
+  filter(State == 'US'& Year>1989 & Year < 2018 & Industry_Sector == 'Total Electric Industry')%>%
+  select(Year, elec_residential, elec_commercial, elec_industrial, elec_transport) 
+dim(elec.select)
 
 
+```
 
+```{r echo = FALSE, message=FALSE, warning=FALSE, fig.cap='US Electricty Consumption by Sector in 1990-2017'}
+
+kable(head(elec.select), caption = "First 6 rows of electricity consumptions by sector in US (Mwh)") %>%
+  kable_styling(latex_options="scale_down")
+
+elec.gather <- gather(elec.select, 'Sector', 'Electricity_Consumption', -Year)
+count(GDP.gather)
+elec.gather$Electricity_Consumption <- str_replace_all(elec.gather$Electricity_Consumption,
+pattern = "([,])", replacement = "")
+
+elec.gather$Electricity_Consumption <- as.numeric(elec.gather$Electricity_Consumption)
+str(elec.gather)
+elec.gather2 <- elec.gather %>%
+  filter(!is.na(Electricity_Consumption))
+
+elec.line <- ggplot(elec.gather2)+
+  geom_line(aes(x= Year, y=Electricity_Consumption, color=Sector))+
+  labs(y= 'Electricity Consumption (Mwh)',
+       color = '')+
+  scale_color_brewer(palette = 'Set1')+
+  facet_wrap(vars(Sector), scales = 'free')+
+  theme(legend.position = "none") 
+print(elec.line)
+
+```
+
+\newpage
+
+##US GHG Concentration by Gas
+
+```{r warning=FALSE}
+str(GHG.gas)
+colnames(GHG.gas)
+GHG.gas <- GHG.gas %>%
+  rename("CO2" = Carbon.dioxide, 'CH4' = Methane, 'N2O' = Nitrous.oxide, 'Fgas' = Fluorinated.gases)
+colnames(GHG.gas)
+
+```
+
+```{r echo = FALSE, message=FALSE, warning=FALSE, fig.cap= 'US GHG Concentration by Gas Type in 1990-2017 (MMTCO2e)', fig.height=8, fig.width=7}
+kable(head(GHG.gas), caption = "First 6 years of GHG emissions by gas type (MMTCO2e)") %>%
+  kable_styling(latex_options="scale_down")
+
+GHG.gas.gather <- gather(GHG.gas, 'Gas', 'Concentration', -Year)
+count(GHG.gas.gather)
+
+GHG.gas.line <- ggplot(GHG.gas.gather)+
+  geom_line(aes(x= Year, y=Concentration, color = Gas))+
+  labs(y= bquote(bold('Concentration (MMT'~CO[2]~'e)')),
+       color = '')+
+  scale_color_brewer(palette = 'Set1')+
+  scale_x_continuous("Year", labels = as.character(GHG.gas.gather$Year), breaks = GHG.gas.gather$Year)
+
+GHG.gas.line.facet <- ggplot(GHG.gas.gather)+
+  geom_line(aes(x= Year, y=Concentration, color = Gas))+
+  labs(y= bquote(bold('Concentration (MMT'~CO[2]~'e)')),
+       color = '')+
+  scale_color_brewer(palette = 'Set1')+
+  facet_wrap(vars(Gas), scales = 'free')+
+  theme(legend.position = "none")
+
+plot_grid(GHG.gas.line,
+          GHG.gas.line.facet,
+          label_x = 0.2,
+          nrow = 2)
+```
+
+\newpage
+
+##US GHG Emissions by Sector
+
+```{r warning=FALSE}
+str(GHG.sector)
+colnames(GHG.sector)
+GHG.sector <- GHG.sector %>%
+  rename('Electricity_generation' = Electricity.generation)
+colnames(GHG.sector)
+
+GHG.sector.select <- GHG.sector %>%
+  select(Year, Transportation, Electricity_generation, Industry, Agriculture, Commercial,Residential)
+dim(GHG.sector.select)
+
+```
+
+```{r echo = FALSE, message=FALSE, warning=FALSE, fig.cap= 'US GHG Emissions by Sector in 1990-2017 (MMTcO2e)', fig.height=8, fig.width=7}
+GHG.sector.gather <- gather(GHG.sector.select, 'Sector', 'Emission', -Year)
+count(GHG.sector.gather)
+
+GHG.sector.line <- ggplot(GHG.sector.gather)+
+  geom_line(aes(x= Year, y=Emission, color = Sector))+
+  labs(y= bquote(bold('GHG Emission (MMT'~CO[2]~'e)')),
+       color = '')+
+  scale_color_brewer(palette = 'Dark2')+
+  scale_x_continuous("Year", labels = as.character(GHG.sector.gather$Year), breaks = GHG.sector.gather$Year)
+
+GHG.sector.line.facet <- ggplot(GHG.sector.gather)+
+  geom_line(aes(x= Year, y=Emission, color = Sector))+
+  labs(y= bquote(bold('GHG Emission (MMT'~CO[2]~'e)')),
+       color = '')+
+  scale_color_brewer(palette = 'Dark2')+
+  facet_wrap(vars(Sector), scales = 'free')+
+  theme(legend.position = "none")
+
+plot_grid(GHG.sector.line,
+          GHG.sector.line.facet,
+          label_x = 0.2,
+          nrow = 2)
+```
+
+```{r echo = FALSE, message=FALSE, warning=FALSE}
+kable(head(GHG.sector.select), caption = "First 6 years of GHG emissions by sector (MMTCO2e)") %>%
+  kable_styling(latex_options="scale_down")
+
+```
+
+\newpage
+
+##US Annual Mean Temperature
+
+```{r warning=FALSE}
+str(temp)
+colnames(temp)
+temp <- mutate(temp, Year = year(as.Date(as.yearmon(as.character(temp$Date), format = "%Y%m"))))
+str(temp)
+
+temp.select <- temp %>%
+  select(Year, Value, Anomaly) %>%
+  mutate(Mean_all_temp =  mean(Value))
+dim(temp.select)
+str(temp.select)
+
+```
+
+```{r echo = FALSE, message=FALSE, warning=FALSE}
+kable(head(temp.select), caption = "First 6 years of US temperature data in 1990-2017 (F)") %>%
+  kable_styling(latex_options="scale_down")
+
+```
+
+```{r echo = FALSE, message=FALSE, warning=FALSE,fig.cap= "US Annual Temperature Anomaly in 1990-2017 (F)"}
+temp.line <- ggplot(temp.select, aes(x= Year, y=Value))+
+  geom_point()+
+  geom_line()+
+  geom_line(aes(y=Mean_all_temp, color= 'red'))+
+  labs(y= expression("Temperature ("*~degree*F*")"),
+       title = expression("US Annual Mean Temperature in 1990-2017 ("*~degree*F*")"))+
+  scale_x_continuous("Year", labels = as.character(temp.select$Year), breaks = temp.select$Year)+
+  geom_text(x = 2017, y = 53, label = "Average Temperature for 18 Years", hjust = 1, size = 3, color = 'red')+
+  theme(legend.position = "none", axis.title.x = element_blank(), axis.text.x = element_blank())
+
+temp.select$colour <- ifelse(temp.select$Anomaly < 0, "negative","positive")
+temp.anom <- ggplot(temp.select)+
+  geom_col(aes(x=Year, y=Anomaly, fill=colour))+
+  labs(y= expression("Temperature Anomaly ("*~degree*F*")"),
+      color = '')+
+  scale_x_continuous("Year", labels = as.character(temp.select$Year), breaks = temp.select$Year)+
+  scale_fill_manual(values=c(positive="firebrick1",negative="steelblue"))+
+  theme(legend.position = 'none')
+
+plot_grid(temp.line,
+          temp.anom,
+          label_x = 0.2,
+          nrow = 2)
+```
+
+\newpage
+
+##US Population
+```{r warning=FALSE}
+str(ppl)
+ppl.select <- ppl %>%
+  select(Year, United.States) %>%
+  filter(Year >1989 & Year < 2018)
+dim(ppl.select)
+
+colnames(ppl.select)
+ppl.select <- ppl.select %>%
+  rename('US_pop' = United.States)
+colnames(ppl.select)
+```
+
+```{r echo = FALSE, message=FALSE, warning=FALSE}
+kable(head(ppl.select), caption = "First 6 years of US population in 1990-2017") %>%
+  kable_styling(latex_options="scale_down")
+```
+
+Save all processed code to the Processed folder
+```{r message = FALSE, warning = FALSE}
+write.csv(GDP.select, row.names = FALSE, file = './Processed Data/BEA_GDP_processed.csv')
+write.csv(elec.select, row.names = FALSE, file = './Processed Data/EIA_electricity-consumption_sector_processed.csv')
+write.csv(GHG.gas, row.names = FALSE, file = './Processed Data/EPA_GHG_Gas_processed.csv')
+write.csv(GHG.sector.select, row.names = FALSE, file = './Processed Data/EPA_GHG_Sector_processed.csv')
+write.csv(temp.select, row.names = FALSE, file = './Processed Data/NOAA_temp_processed.csv')
+write.csv(ppl.select, row.names = FALSE, file = './Processed Data/WB_pop_processed.csv')
+
+```
+
+Re-arrange datasets.
+```{r message = FALSE, warning = FALSE}
+newGDP <- read.csv('./Processed Data/BEA_GDP_processed.csv', head(T))
+newelectricity <- read.csv('./Processed Data/EIA_electricity-consumption_sector_processed.csv', head(T))
+newGHGgas <- read.csv('./Processed Data/EPA_GHG_Gas_processed.csv', head(T))
+newGHGsector <- read.csv('./Processed Data/EPA_GHG_Sector_processed.csv', head(T))
+newtemp <- read.csv('./Processed Data/NOAA_temp_processed.csv', head(T))
+newpop <- read.csv('./Processed Data/WB_pop_processed.csv', head(T))
+
+allGHG <- full_join(newGHGgas,newGHGsector, by = 'Year')
+GHG_contribute <- full_join(newelectricity, newpop, by = 'Year')
+GHG_impact <- full_join(newGDP, newtemp, by = 'Year')
+```
+
+\newpage
+
+#Analysis
 ## Question 1: <insert specific question here and add additional subsections for additional questions below, if needed>
+
+###Check assumption - normal distribution of GHG data
+lm - look at explainations here https://feliperego.github.io/blog/2015/10/23/Interpreting-Model-Output-In-R
+##1. normal distrbution GHG concentration
+shapiro test: two p-values are greater than the significance level 0.05 implying that the distribution of the data are not significantly different from normal distribution. In other words, we can assume the normality.
+```{r include = FALSE}
+
+summary(allGHG)
+
+shapiro.test(allGHG$Total)
+shapiro.test(allGHG$CO2)
+shapiro.test(allGHG$CH4)
+shapiro.test(allGHG$N2O)
+shapiro.test(allGHG$Fgas)
+
+shapiro.test(allGHG$Transportation)
+shapiro.test(allGHG$Electricity_generation)
+shapiro.test(allGHG$Industry)
+shapiro.test(allGHG$Agriculture)
+shapiro.test(allGHG$Commercial)
+shapiro.test(allGHG$Residential)
+
+allsample <- t.test(allGHG, mu=mean(allGHG$Total), alternative = 'less')
+allsample
+
+```
+
+
+###Are sectoral GHG emissions significantly different from each other? How sectoral emissions contribute to total emissions (correlation)? (Lec12 - multiple regression)
+cor.test: If the p-value is < 5%, then the correlation between x and y is significant.
+```{r include = FALSE}
+##sectoral emissions differ from each other?
+GHG.regression <- lm(data=allGHG, Transportation~ Electricity_generation+Industry+Agriculture+Commercial+Residential)
+summary(GHG.regression)
+step(GHG.regression)
+
+#how contribute to total emission - correlation
+cor.test(allGHG$Total,allGHG$Transportation)
+cor.test(allGHG$Total,allGHG$Electricity_generation)
+cor.test(allGHG$Total,allGHG$Industry)
+cor.test(allGHG$Total,allGHG$Agriculture)
+cor.test(allGHG$Total,allGHG$Commercial)
+cor.test(allGHG$Total,allGHG$Residential)
+
+```
+
+```{r echo = FALSE, message=FALSE, warning=FALSE, fig.cap= "Checking Model Fit and Assumptions for US GHG Emission by Sector"}
+par(mfrow = c(2,2), mar=c(1,1,1,1))
+plot(GHG.regression)
+```
+
+```{r include = FALSE}
+par(mfrow = c(1,1))
+allGHG.bysector <- allGHG %>%
+  select(Total:Residential)
+allGHG.corr <- cor(allGHG.bysector)
+```
+
+```{r echo = FALSE, message=FALSE, warning=FALSE, fig.cap= "Correlation Plot of US GHG Emission by Sector"}
+par(mfrow = c(1,1))
+corrplot(allGHG.corr, method = "ellipse", tl.cex = 0.5)
+```
+
+\newpage
+
+###Check dataset- Does total electricity consumption differ among sectors (category vs discrete)?
+Shapiro-Wilk test can be performed as follow:
+Null hypothesis: the data are normally distributed
+Alternative hypothesis: the data are not normally distributed
+
+lm: If the p-value is less than 0.05, we reject the null hypothesis that there's no difference between the means and conclude that a significant difference does exist.
+```{r include = FALSE}
+newelectricity.gather <- gather(newelectricity, 'Sector', 'Emission', -Year)
+count(newelectricity.gather)
+
+newelectricity.gather$Emission <- str_replace_all(newelectricity.gather$Emission,
+pattern = "([,])", replacement = "")
+newelectricity.gather$Emission <- as.numeric(newelectricity.gather$Emission)
+str(newelectricity.gather)
+#elec.gather2 <- elec.gather %>%
+ # filter(!is.na(Electricity_Consumption))
+
+#One-way Anova, test for normality
+shapiro.test(newelectricity.gather$Emission[newelectricity.gather$Sector=='elec_residential'])
+shapiro.test(newelectricity.gather$Emission[newelectricity.gather$Sector=='elec_commercial'])
+shapiro.test(newelectricity.gather$Emission[newelectricity.gather$Sector=='elec_industrial'])
+shapiro.test(newelectricity.gather$Emission[newelectricity.gather$Sector=='elec_transport'])
+
+#Test for equal variance
+##a small p-value for the intercept and the slope indicates that we can reject the null hypothesis which allows us to conclude that there is a relationship between speed and distance.
+bartlett.test(newelectricity.gather$Emission ~ newelectricity.gather$Sector)
+
+newelectricity.anova <- aov(data = newelectricity.gather, Emission ~ Sector)
+summary(newelectricity.anova)
+
+```
+
+```{r echo = FALSE, message=FALSE, warning=FALSE, fig.cap= "Checking Model Fit and Assumptions for US Electricity Consumption"}
+#Checking model fit and assumptions
+# ANOVA is robust against departures from normality.
+par(mfrow = c(2,2), mar=c(1,1,1,1))
+plot(newelectricity.anova)
+
+```
+
+```{r include = FALSE}
+
+# Post-hoc test # Run a post-hoc test for pairwise differences
+TukeyHSD(newelectricity.anova)
+
+```
+
+```{r echo = FALSE, message=FALSE, warning=FALSE, fig.cap= "Post-hoc Test Plot - Pairwise Relationship between Emissions and Sectors"}
+
+#Extract groupings for pairwise relationships
+newelectricity.groups <- HSD.test(newelectricity.anova, "Sector", group = TRUE)
+newelectricity.groups
+
+newelectricity.graph <- ggplot(newelectricity.gather, aes(x = Sector, y = Emission)) +
+  geom_boxplot() +
+  theme(axis.text.x = element_text(angle = 45, hjust = 1)) + stat_summary(geom = "text", fun.y = max, vjust = -1, size = 3.5, label = c('b','c','a','d')) +
+  labs(x = "Sector", y = "Emission") 
+print(newelectricity.graph)
+
+```
+
+\newpage
+
+### Are electricity comsupmtions in some sectors significant to total GHG emissions?
+lm: If the p-value is less than 0.05, we reject the null hypothesis which allows us to conclude that there is a relationship between speed and distance.
+```{r include = FALSE}
+##linear regression - electricity consumption relation to total GHG emissions
+GHG_contribute$elec_residential <- str_replace_all(GHG_contribute$elec_residential,
+pattern = "([,])", replacement = "")
+GHG_contribute$elec_residential <- as.numeric(GHG_contribute$elec_residential)
+GHG_contribute$elec_commercial <- str_replace_all(GHG_contribute$elec_commercial,
+pattern = "([,])", replacement = "")
+GHG_contribute$elec_commercial <- as.numeric(GHG_contribute$elec_commercial)
+GHG_contribute$elec_industrial <- str_replace_all(GHG_contribute$elec_industrial,
+pattern = "([,])", replacement = "")
+GHG_contribute$elec_industrial <- as.numeric(GHG_contribute$elec_industrial)
+GHG_contribute$elec_transport <- str_replace_all(GHG_contribute$elec_transport,
+pattern = "([,])", replacement = "")
+GHG_contribute$elec_transport <- as.numeric(GHG_contribute$elec_transport)
+
+elec.regression <- lm(allGHG$Total ~GHG_contribute$elec_residential + GHG_contribute$elec_commercial + GHG_contribute$elec_industrial + GHG_contribute$elec_transport)
+summary(elec.regression)
+
+step(elec.regression)
+
+elecmodel <- lm(formula = allGHG$Total ~ GHG_contribute$elec_residential + 
+    GHG_contribute$elec_transport)
+summary(elecmodel)
+```
+
+```{r echo = FALSE, message=FALSE, warning=FALSE, fig.cap= "Checking Model Fit and Assumptions for the Improved Model"}
+
+par(mfrow = c(2,2), mar=c(1,1,1,1))
+plot(elecmodel)
+par(mfrow = c(1,1))
+```
+
+\newpage
+
+###Is population growth significant to GHG emissions ?
+cor.test: If the p-value is < 5%, then the correlation between x and y is significant.
+
+```{r include = FALSE}
+shapiro.test(GHG_contribute$US_pop) #normal
+
+pop.regression <- lm(allGHG$Total ~GHG_contribute$US_pop)
+summary(pop.regression)
+cor.test(allGHG$Total,GHG_contribute$US_pop) #not significant, no relationship, same as lm
+```
+
+```{r echo = FALSE, message=FALSE, warning=FALSE, fig.cap= "Checking Model Fit and Assumptions for US Population"}
+
+par(mfrow = c(2,2), mar=c(1,1,1,1))
+plot(pop.regression)
+par(mfrow = c(1,1))
+```
+
+```{r echo = FALSE, message=FALSE, warning=FALSE, fig.cap= "Relationship between Population and GHG Concentration"}
+
+ppl.all <- full_join(allGHG, newpop, by = 'Year')
+# Plot the regression
+GHGpop.plot <-ggplot(ppl.all, aes(x = US_pop, y = Total)) + 
+  geom_line()+
+  labs(y= bquote(bold('GHG Emission (MMT'~CO[2]~'e)')),
+       x= 'Population',
+       color = '')+
+  geom_vline(xintercept = ppl.all$US_pop[which.max(ppl.all$Total)], color = "#f20505", lty = 2, size = 0.9)+
+  geom_text(y = 6400, x = 3.0e+08, label = 'Highest GHG Concentration Year: 2007', hjust = 1, size = 3, color = 'red')
+print(GHGpop.plot)
+
+```
+
+\newpage
+
+```{r echo = FALSE, message=FALSE, warning=FALSE, fig.cap= "US Annual Temperature Anomaly in 1990-2017 (F)", fig.height=8, fig.width=7}
+
+```
+
+```{r echo = FALSE, message=FALSE, warning=FALSE, fig.cap= "US Annual Temperature Anomaly in 1990-2017 (F)", fig.height=8, fig.width=7}
+```
+
+```{r echo = FALSE, message=FALSE, warning=FALSE, fig.cap= "US Annual Temperature Anomaly in 1990-2017 (F)", fig.height=8, fig.width=7}
+
+```
+
 
 ## Question 2: 
 
