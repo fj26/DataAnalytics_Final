@@ -35,6 +35,7 @@ library(agricolae)
 library(corrplot)
 library(trend)
 library(modifiedmk)
+
 projecttheme <- theme_light() + 
   theme(
     plot.title = element_text(color = 'dimgray', size = 12, face = 'bold'), 
@@ -165,24 +166,29 @@ kable(structure, caption = "Summary of Data Structure ") %>%
 Some raw datasets are at global scale, or have longer temporal ranges, which are beyond the scope of this project. Also, some discrete variables were downloaded as characters, which could not be adopted by some statistical models. Therefore, thse datasets were first wrangled to focus on US region in the period between 1990 and 2017. This section demonsrates the process of data wrangling in details, as well as presents the overview of the content of each dataset.
 
 ##US GDP
-
 ```{r warning = FALSE}
+#Show the structure of the raw dataset
 str(GDP)
+
+#Rename column name for easier use
 GDP <- GDP %>%
   rename('GDP' = 'Gross.domestic.product', 'Personal_consumption' = 'Personal.consumption.expenditures')
 
+##Reframe dataset to meet project objective
 GDP.select<- GDP %>%
   filter(Year>1989 & Year < 2018) %>%
   select(Year, GDP, Personal_consumption)
 dim(GDP.select)
 
-
 ```
+
+Figure 1 illustartes the trend of change of US GDP and personal consumptions over the years. Generally, GDP growth was increasing in most years, though slowing down at the beginning of the 21st century and decreasing in 2008-2009 when financial crisis ocurred. The changing trend of personal consumptions over the years was generally consistent to GDP growth, as the personal consumption is one of variables accounted to total GDP. Therefore, from this overview of the dataset, the variable of personal consumption would not be considered as an unique and significant variable to conduct additional analysis. Instead, in economic development analysis in Chapter 4, only total GDP will be studied.
 
 ```{r echo = FALSE, message = FALSE, warning = FALSE, fig.cap= 'US Economic Features in 1990-2017'}
 #kable(head(GDP.select), caption = "First 6 rows of GDP and personal consumption (billion US$)") %>%
- # kable_styling(latex_options="scale_down")
+ # kable_styling(latex_options="hold_position")
 
+#Gather dataset together for visualization
 GDP.gather <- gather(GDP.select, 'Type', 'Value', -Year)
 count(GDP.gather)
 
@@ -198,33 +204,40 @@ print(GDP.line)
 \newpage
 
 ##US Electricity Consumption
+There are three types of industry sector in the raw dataset. In this project, I focused on "Total Electric Industry", which includes all types of survices in electricity consumption in each sector. There are four sectors covered in the electricity consumption dataset, which are illustrateed as Table ???. The values of consumption data are in factor format and separted by commas, so it is necessary to convert these values to numeric variables first. By visualizing electricity consumption data in Figure 2, we can notice that all four graphs are in different consumption scales. Notably, transportation sector has the lowest electricity consumption among all sectors, and also there was no data available for transportation sector in before 2002. Therefore, transporation sector will be filtered out in the next step statistic analysis.
 
 ```{r warning = FALSE}
+#Show the structure of the raw dataset
 str(electric)
+
+#Rename column name for easier use
 electric <- electric %>%
   rename('Industry_Sector' = Industry.Sector.Category, 'elec_residential' = Residential, 'elec_commercial' = Commercial, 'elec_industrial' = Industrial, 'elec_transport' =Transportation)
 colnames(electric)
 
+##Reframe dataset to meet project objective
 elec.select <- electric %>%
   filter(State == 'US'& Year>1989 & Year < 2018 & Industry_Sector == 'Total Electric Industry')%>%
   select(Year, elec_residential, elec_commercial, elec_industrial, elec_transport) 
 dim(elec.select)
-
-
 ```
 
 ```{r echo = FALSE, message=FALSE, warning=FALSE, fig.cap='US Electricty Consumption by Sector in 1990-2017'}
-
+#The preview of reframed dataset
 kable(head(elec.select), caption = "First 6 rows of electricity consumptions by sector in US (Mwh)") %>%
-  kable_styling(latex_options="scale_down")
+  kable_styling(latex_options="hold_position")
 
+#Gather dataset together for visualization
 elec.gather <- gather(elec.select, 'Sector', 'Electricity_Consumption', -Year)
 count(GDP.gather)
+
+#Convert to numeric variables
 elec.gather$Electricity_Consumption <- str_replace_all(elec.gather$Electricity_Consumption,
 pattern = "([,])", replacement = "")
-
 elec.gather$Electricity_Consumption <- as.numeric(elec.gather$Electricity_Consumption)
 str(elec.gather)
+
+#Remove NA data
 elec.gather2 <- elec.gather %>%
   filter(!is.na(Electricity_Consumption))
 
@@ -242,9 +255,13 @@ print(elec.line)
 \newpage
 
 ##US GHG Concentration by Gas
+GHG concentration data indicates the concentration of different GHG gases emitted to the atmosphere. The upper graph in Figure 3 displays the trends for all GHGs together, from which we can see CO2 was the major GHG emitted by human beings. To observe the trend of change more clearly, graphs below show the concentration over years for each GHG. It is hard to summarize the general trend for all GHG emissions, so in the further analysis, the GHG type comparison will be first studied. 
 
 ```{r warning=FALSE}
+#Show the structure of the raw data
 str(GHG.gas)
+
+#Rename column name for easier use
 colnames(GHG.gas)
 GHG.gas <- GHG.gas %>%
   rename("CO2" = Carbon.dioxide, 'CH4' = Methane, 'N2O' = Nitrous.oxide, 'Fgas' = Fluorinated.gases)
@@ -253,9 +270,11 @@ colnames(GHG.gas)
 ```
 
 ```{r echo = FALSE, message=FALSE, warning=FALSE, fig.cap= 'US GHG Concentration by Gas Type in 1990-2017 (MMTCO2e)', fig.height=8, fig.width=7}
+#Preview of reframed dataset
 kable(head(GHG.gas), caption = "First 6 years of GHG emissions by gas type (MMTCO2e)") %>%
-  kable_styling(latex_options="scale_down")
+  kable_styling(latex_options="hold_position")
 
+#Gather dataset together for visualization
 GHG.gas.gather <- gather(GHG.gas, 'Gas', 'Concentration', -Year)
 count(GHG.gas.gather)
 
@@ -283,21 +302,33 @@ plot_grid(GHG.gas.line,
 \newpage
 
 ##US GHG Emissions by Sector
+Figure 4 illustrates the GHG emissions over the same period by sector. The ideology of Figure 4 is same as Figure 3, which internally compares the emissions by sectors. The total sectoral GHG emission is same as the sum of GHG concentration by gas type. Among all 6 sectors emitting GHGs, electricity generation, transporation, and industial sector had highest emissions. It is inspired to study how sectoral emissions had contributed to total GHG emissions, and how they were different from each other.
 
 ```{r warning=FALSE}
 str(GHG.sector)
+
+#Rename column name for easier use
 colnames(GHG.sector)
 GHG.sector <- GHG.sector %>%
   rename('Electricity_generation' = Electricity.generation)
 colnames(GHG.sector)
 
+##Reframe dataset to meet project objective
 GHG.sector.select <- GHG.sector %>%
   select(Year, Transportation, Electricity_generation, Industry, Agriculture, Commercial,Residential)
 dim(GHG.sector.select)
 
 ```
 
-```{r echo = FALSE, message=FALSE, warning=FALSE, fig.cap= 'US GHG Emissions by Sector in 1990-2017 (MMTcO2e)', fig.height=8, fig.width=7}
+```{r echo = FALSE, message=FALSE, warning=FALSE}
+#Preview of reframed dataset
+kable(head(GHG.sector.select), caption = "First 6 years of GHG emissions by sector (MMTCO2e)") %>%
+  kable_styling(latex_options="hold_position")
+```
+
+```{r echo = FALSE, message=FALSE, warning=FALSE, fig.cap= 'US GHG Emissions by Sector in 1990-2017 (MMTCO2e)', fig.height=8, fig.width=7}
+
+#Gather dataset together for visualization
 GHG.sector.gather <- gather(GHG.sector.select, 'Sector', 'Emission', -Year)
 count(GHG.sector.gather)
 
@@ -322,22 +353,20 @@ plot_grid(GHG.sector.line,
           nrow = 2)
 ```
 
-```{r echo = FALSE, message=FALSE, warning=FALSE}
-kable(head(GHG.sector.select), caption = "First 6 years of GHG emissions by sector (MMTCO2e)") %>%
-  kable_styling(latex_options="scale_down")
-
-```
 
 \newpage
 
-##US Annual Mean Temperature
+##US Mean Annual Temperature
 
+Mean annual temperature and temperature anomalies over 1990-2017 are visualized in Figure 5. Temperature anomaly refers to the difference between annual mean temperature and overall averaage temperature for that period. Therefore, the overall average temperature were also calculated and mutated as a new column in the table. Since overall average temperature is constant, temperature anomalies are in the same changing trends as annual mean temperature. Since temperature anomalies are referene values, they can better and more easily demonstrate increasing and decreasing trend by positive and negative symbols. Therefore, temperature anomaly will be used in the future analyses.
 ```{r warning=FALSE}
 str(temp)
+#Convert year characters to date format
 colnames(temp)
 temp <- mutate(temp, Year = year(as.Date(as.yearmon(as.character(temp$Date), format = "%Y%m"))))
 str(temp)
 
+#Reframe dataset to meet project objective
 temp.select <- temp %>%
   select(Year, Value, Anomaly) %>%
   mutate(Mean_all_temp =  mean(Value))
@@ -347,18 +376,19 @@ str(temp.select)
 ```
 
 ```{r echo = FALSE, message=FALSE, warning=FALSE}
+#Preview of reframed dataset
 kable(head(temp.select), caption = "First 6 years of US temperature data in 1990-2017 (F)") %>%
-  kable_styling(latex_options="scale_down")
+  kable_styling(latex_options="hold_position")
 
 ```
 
-```{r echo = FALSE, message=FALSE, warning=FALSE,fig.cap= "US Annual Temperature Anomaly in 1990-2017 (F)"}
+```{r echo = FALSE, message=FALSE, warning=FALSE,fig.cap= "US Mean Annual Temperature Anomaly in 1990-2017 (F)"}
 temp.line <- ggplot(temp.select, aes(x= Year, y=Value))+
   geom_point()+
   geom_line()+
   geom_line(aes(y=Mean_all_temp, color= 'red'))+
   labs(y= expression("Temperature ("*~degree*F*")"),
-       title = expression("US Annual Mean Temperature in 1990-2017 ("*~degree*F*")"))+
+       title = expression("US Mean Annual Temperature in 1990-2017 ("*~degree*F*")"))+
   scale_x_continuous("Year", labels = as.character(temp.select$Year), breaks = temp.select$Year)+
   geom_text(x = 2017, y = 53, label = "Average Temperature for 18 Years", hjust = 1, size = 3, color = 'red')+
   theme(legend.position = "none", axis.title.x = element_blank(), axis.text.x = element_blank())
@@ -381,13 +411,18 @@ plot_grid(temp.line,
 \newpage
 
 ##US Population
+
+Population data retrieved from World Bank is at global scale covering 60 years since 1960. Therefore, both geograhic and temporal selection are needed to reframe the dataset. The sample of the wrangled dateset is shown as Table ???.
 ```{r warning=FALSE}
 str(ppl)
+
+#Reframe dataset to meet project objective
 ppl.select <- ppl %>%
   select(Year, United.States) %>%
   filter(Year >1989 & Year < 2018)
 dim(ppl.select)
 
+#Rename column name for easier use
 colnames(ppl.select)
 ppl.select <- ppl.select %>%
   rename('US_pop' = United.States)
@@ -395,12 +430,13 @@ colnames(ppl.select)
 ```
 
 ```{r echo = FALSE, message=FALSE, warning=FALSE}
+#Preview of reframed dataset
 kable(head(ppl.select), caption = "First 6 years of US population in 1990-2017") %>%
-  kable_styling(latex_options="scale_down")
+  kable_styling(latex_options="hold_position")
 ```
 
-Save all processed code to the Processed folder
 ```{r message = FALSE, warning = FALSE}
+#Save all processed code to the Processed folder
 write.csv(GDP.select, row.names = FALSE, file = './Processed Data/BEA_GDP_processed.csv')
 write.csv(elec.select, row.names = FALSE, file = './Processed Data/EIA_electricity-consumption_sector_processed.csv')
 write.csv(GHG.gas, row.names = FALSE, file = './Processed Data/EPA_GHG_Gas_processed.csv')
@@ -410,8 +446,9 @@ write.csv(ppl.select, row.names = FALSE, file = './Processed Data/WB_pop_process
 
 ```
 
-Re-arrange datasets.
 ```{r message = FALSE, warning = FALSE}
+
+#Reload new datasets.
 newGDP <- read.csv('./Processed Data/BEA_GDP_processed.csv', head(T))
 newelectricity <- read.csv('./Processed Data/EIA_electricity-consumption_sector_processed.csv', head(T))
 newGHGgas <- read.csv('./Processed Data/EPA_GHG_Gas_processed.csv', head(T))
@@ -427,12 +464,20 @@ GHG_impact <- full_join(newGDP, newtemp, by = 'Year')
 \newpage
 
 #Analysis
-## Question 1: <insert specific question here and add additional subsections for additional questions below, if needed>
+*Figures in this sections are disordered - the float package was not compatible to my system. All statements in this section will describe which specific figures are referring to in certain analyses.*
 
-###Check assumption - normal distribution of GHG data
+##Question 1: What factors have contributed to GHG emissions in these 18 years?
+
+###Are emissions of different GHGs related to each other?
+As discussed in Chapter 3, there is no general trend for the concentration of all GHGs. Therefore, before delving into external impacts on GHG concentrations, how different types of GHGs were varied from each other were first studied.
+
+The distribution of all GHG data were assessed with shapiro.test. Most p-values are  greater than 0.05, which implies that the distribution of these data re not significantly different from normal distribution. Therefore, these data are normally distributed. Other data, namely CH4 and Fgas, obtain a p-value less than 0.05 (even transforming these two variables by taking the log and square root), which indicate they are not normally distributed. However, from the normal Q-Q plot, the scatters lie close to the line and symmetry across the qq normal line, so these two data can still be seen as normally distributed. All GHG emissions by sector obtain p-values greater than 0.05 from the shapiro.test, so they are normally distributed. Parametric tests will be used for all GHG dataset.
+
+One-sample t-test was first conducted to assess the null hypothesis that the mean of allGHG dataset is equal to the mean of total . For example, we might ask ourselves (from the EPA air quality processed dataset): 
+
+Are Ozone levels below the threshold for "good" AQI index (0-50)?
 lm - look at explainations here https://feliperego.github.io/blog/2015/10/23/Interpreting-Model-Output-In-R
-##1. normal distrbution GHG concentration
-shapiro test: two p-values are greater than the significance level 0.05 implying that the distribution of the data are not significantly different from normal distribution. In other words, we can assume the normality.
+
 ```{r include = FALSE}
 
 summary(allGHG)
@@ -442,6 +487,10 @@ shapiro.test(allGHG$CO2)
 shapiro.test(allGHG$CH4)
 shapiro.test(allGHG$N2O)
 shapiro.test(allGHG$Fgas)
+shapiro.test(sqrt(allGHG$CH4))
+shapiro.test(sqrt(allGHG$Fgas))
+qqnorm(allGHG$CH4);qqline(allGHG$CH4)
+
 
 shapiro.test(allGHG$Transportation)
 shapiro.test(allGHG$Electricity_generation)
@@ -455,6 +504,36 @@ allsample
 
 ```
 
+lm: a small p-value for the intercept and the slope indicates that we can reject the null hypothesis which allows us to conclude that there is a relationship between speed and distance.
+```{r include = FALSE}
+GHG.gas.regression <- lm(data=allGHG, CO2~ CH4+N2O+Fgas)
+summary(GHG.gas.regression)
+step(GHG.gas.regression)
+
+GHG.gas.regression.improve <- lm(formula = CO2 ~ CH4 + N2O, data = allGHG)
+summary(GHG.gas.regression.improve)
+
+allGHG.bygas <- allGHG %>%
+  select(CO2:Fgas)
+
+cor.test(allGHG.bygas$CO2, allGHG.bygas$CH4)
+cor.test(allGHG.bygas$CO2, allGHG.bygas$N2O)
+cor.test(allGHG.bygas$CO2, allGHG.bygas$Fgas)
+#Visualize this result
+allGHG.gas.corr <- cor(allGHG.bygas)
+```
+
+```{r echo = FALSE, message=FALSE, warning=FALSE, fig.cap= "Checking Model Fit and Assumptions for US GHG Concentration by Gas"}
+par(mfrow = c(2,2), mar=c(1,1,1,1))
+plot(GHG.gas.regression.improve)
+par(mfrow = c(1,1))
+```
+
+```{r echo = FALSE, message=FALSE, warning=FALSE, fig.cap= "Correlation Plot of US GHG Concentration by Gas"}
+corrplot(allGHG.gas.corr, method = "ellipse", tl.cex = 0.5)
+```
+
+\newpage
 
 ###Are sectoral GHG emissions significantly different from each other? How sectoral emissions contribute to total emissions (correlation)? (Lec12 - multiple regression)
 cor.test: If the p-value is < 5%, then the correlation between x and y is significant.
@@ -538,13 +617,13 @@ plot(newelectricity.anova)
 # Post-hoc test # Run a post-hoc test for pairwise differences
 TukeyHSD(newelectricity.anova)
 
-```
-
-```{r echo = FALSE, message=FALSE, warning=FALSE, fig.cap= "Post-hoc Test Plot - Pairwise Relationship between Emissions and Sectors"}
-
 #Extract groupings for pairwise relationships
 newelectricity.groups <- HSD.test(newelectricity.anova, "Sector", group = TRUE)
 newelectricity.groups
+
+```
+
+```{r echo = FALSE, message=FALSE, warning=FALSE, fig.cap= "Post-hoc Test Plot - Pairwise Relationship between Emissions and Sectors"}
 
 newelectricity.graph <- ggplot(newelectricity.gather, aes(x = Sector, y = Emission)) +
   geom_boxplot() +
@@ -627,22 +706,93 @@ print(GHGpop.plot)
 
 \newpage
 
-```{r echo = FALSE, message=FALSE, warning=FALSE, fig.cap= "US Annual Temperature Anomaly in 1990-2017 (F)", fig.height=8, fig.width=7}
+##Question 2: 
+### GHGs and temperature 
+which sector emission is significant to temperature anomaly?
+```{r include = FALSE}
+shapiro.test(newtemp$Anomaly)
+#time series analysis- Mann-Kendall
+#The null hypothesis of the test is that there is no trend in the data and the alternative hypothesis is that the data represents a monotonic trend.
+
+#If the p-value is less than 0.05, we reject the null hypothesis.
+GHGtemp_data<- full_join(allGHG, newtemp, by='Year')
+GHGtemp.ts <- ts(GHGtemp_data$Value, start=c(1990), end=c(2017), frequency=1)
+class(GHGtemp.ts)
+GHGtemp.ts.vector <- as.numeric(GHGtemp.ts)
+class(GHGtemp.ts.vector)
+GHGtemp.trend <- mmkh(GHGtemp.ts.vector, ci=0.95)
+GHGtemp.trend
+summary(GHGtemp.trend)
+
+
+#linear regression
+##a p-value of 5% or less is a good cut-off point. In our model example, the p-values are very close to zero. Note the ‘signif. Codes’ associated to each estimate. Three stars (or asterisks) represent a highly significant p-value. Consequently, a small p-value for the intercept and the slope indicates that we can reject the null hypothesis which allows us to conclude that there is a relationship between speed and distance.
+GHG.temp.regression <- lm(GHGtemp_data,formula = Anomaly~  Transportation+Electricity_generation+Industry+Agriculture+Commercial+Residential)
+summary(GHG.temp.regression)
+
+step(GHG.temp.regression)
+
+GHG.temp.regression.improve <- lm(formula = Anomaly ~ Transportation + Agriculture + Commercial + Residential, data = GHGtemp_data)
+summary(GHG.temp.regression.improve)
+
+
+GHGsector.temp <- GHGtemp_data %>%
+  select(Transportation:Residential, Anomaly)
+
+cor.test(GHGsector.temp$Anomaly, GHGsector.temp$Transportation)
+cor.test(GHGsector.temp$Anomaly, GHGsector.temp$Electricity_generation)
+cor.test(GHGsector.temp$Anomaly, GHGsector.temp$Industry)
+cor.test(GHGsector.temp$Anomaly, GHGsector.temp$Agriculture)
+cor.test(GHGsector.temp$Anomaly, GHGsector.temp$Commercial)
+cor.test(GHGsector.temp$Anomaly, GHGsector.temp$Residential)
+
+GHGsector.temp.corr <- cor(GHGsector.temp)
+```
+
+```{r echo = FALSE, message=FALSE, warning=FALSE, fig.cap= "Checking Model Fit and Assumptions for the Relationship between US Mean Annual Temperature and Sectoral Emissions"}
+par(mfrow = c(2,2), mar=c(1,1,1,1))
+plot(GHG.temp.regression.improve)
+par(mfrow = c(1,1))
+```
+
+```{r echo = FALSE, message=FALSE, warning=FALSE, fig.cap= "Correlation Plot between US Mean Annual Temperature and Sectoral GHG Emissions"}
+corrplot(GHGsector.temp.corr, method = "ellipse", tl.cex = 0.5)
 
 ```
 
-```{r echo = FALSE, message=FALSE, warning=FALSE, fig.cap= "US Annual Temperature Anomaly in 1990-2017 (F)", fig.height=8, fig.width=7}
+### GHG and GDP
+Is GHG emission significant to GDP growth?
+```{r include = FALSE}
+shapiro.test(newGDP$GDP)
+
+GHGgdp_data<- full_join(allGHG, newGDP, by='Year')
+GHGgdp.ts <- ts(GHGgdp_data$GDP, start=c(1990), end=c(2017), frequency=1)
+class(GHGgdp.ts)
+GHGgdp.ts.vector <- as.numeric(GHGgdp.ts)
+class(GHGgdp.ts.vector)
+GHGgdp.trend <- mmkh(GHGgdp.ts.vector, ci=0.95)
+GHGgdp.trend
+summary(GHGtemp.trend)
+
+GDP.anova <- lm(data=GHGgdp_data, Total~GDP+Personal_consumption)
+summary(GDP.anova) 
+step(GDP.anova)
 ```
 
-```{r echo = FALSE, message=FALSE, warning=FALSE, fig.cap= "US Annual Temperature Anomaly in 1990-2017 (F)", fig.height=8, fig.width=7}
-
+```{r echo = FALSE, message=FALSE, warning=FALSE, fig.cap= "Checking Model Fit and Assumptions for the Relationship between US GDP and Total GHG Emissions"}
+par(mfrow = c(2,2), mar=c(1,1,1,1))
+plot(GDP.anova)
+par(mfrow = c(1,1))
 ```
 
-
-## Question 2: 
-
-
-
+```{r echo = FALSE, message=FALSE, warning=FALSE, fig.cap= "Relationship between US GDP and Total GHG Emissions"}
+# Add a line and standard error for the linear regression
+GHGgdp.plot <- ggplot(GHGgdp_data, aes(x = Total, y = GDP)) + 
+  geom_smooth(method = "lm") +
+  labs(y= 'GDP (US$ billion)', x= bquote(bold('Total GHG Emission (MMT'~CO[2]~'e)')))+
+  geom_point()
+print(GHGgdp.plot)
+```
 
 \newpage
 
