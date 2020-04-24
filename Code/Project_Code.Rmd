@@ -358,7 +358,7 @@ plot_grid(GHG.sector.line,
 
 ##US Mean Annual Temperature
 
-Mean annual temperature and temperature anomalies over 1990-2017 are visualized in Figure 5. Temperature anomaly refers to the difference between annual mean temperature and overall averaage temperature for that period. Therefore, the overall average temperature were also calculated and mutated as a new column in the table. Since overall average temperature is constant, temperature anomalies are in the same changing trends as annual mean temperature. Since temperature anomalies are referene values, they can better and more easily demonstrate increasing and decreasing trend by positive and negative symbols. Therefore, temperature anomaly will be used in the future analyses.
+Mean annual temperature and temperature anomalies over 1990-2017 were visualized in Figure 5. Temperature anomaly refers to the difference between annual mean temperature and overall averaage temperature for that period. Therefore, the overall average temperature were also calculated and mutated as a new column in the table. Since overall average temperature is constant, temperature anomalies are in the same changing trends as annual mean temperature. As referene values, temperature anomalies can better and more easily demonstrate increasing and decreasing trends by positive and negative symbols. Therefore, temperature anomaly would be used in the future analyses.
 ```{r warning=FALSE}
 str(temp)
 #Convert year characters to date format
@@ -412,7 +412,7 @@ plot_grid(temp.line,
 
 ##US Population
 
-Population data retrieved from World Bank is at global scale covering 60 years since 1960. Therefore, both geograhic and temporal selection are needed to reframe the dataset. The sample of the wrangled dateset is shown as Table 6.
+Population data retrieved from World Bank is at global scale covering 60 years since 1960. Therefore, both geograhic and temporal selection of the dataset have to be reframed. The sample of the wrangled dateset was shown as Table 6.
 ```{r warning=FALSE}
 str(ppl)
 
@@ -448,7 +448,7 @@ write.csv(ppl.select, row.names = FALSE, file = './Processed Data/WB_pop_process
 
 ```{r message = FALSE, warning = FALSE}
 
-#Reload new datasets.
+#Reload new datasets
 newGDP <- read.csv('./Processed Data/BEA_GDP_processed.csv', head(T))
 newelectricity <- read.csv('./Processed Data/EIA_electricity-consumption_sector_processed.csv', head(T))
 newGHGgas <- read.csv('./Processed Data/EPA_GHG_Gas_processed.csv', head(T))
@@ -468,10 +468,10 @@ GHG_impact <- full_join(newGDP, newtemp, by = 'Year')
 
 ##Question 1: What factors have contributed to GHG emissions in these 28 years?
 
-###Are emissions of different GHGs related to each other?
-As discussed in Chapter 3, there is no general trend for the concentration of all GHGs. Therefore, before delving into external impacts on GHG concentrations, how different types of GHGs were varied from each other were first studied.
+###Were emissions of different GHGs related to each other?
+As discussed in Chapter 3, there was no general trend for the concentration of all GHGs. Therefore, before delving into external impacts on GHG concentrations, how different types of GHGs were varied from each other were first studied.
 
-The distribution of all GHG data were assessed with shapiro.test. Most p-values are  greater than 0.05, which implies that the distribution of these data re not significantly different from normal distribution. Therefore, these data are normally distributed. Other data, namely CH4 and Fgas, obtain a p-value less than 0.05 (even transforming these two variables by taking the log and square root), which indicate they are not normally distributed. However, from the normal Q-Q plot, the scatters lie close to the line and symmetry across the qq normal line, so these two data can still be seen as normally distributed. All GHG emissions by sector obtain p-values greater than 0.05 from the shapiro.test, so they are normally distributed. Parametric tests will be used for all GHG dataset.
+The distribution of all GHG data were assessed with shapiro.test. Most p-values were  greater than 0.05, which implied that the distribution of these data were not significantly different from normal distribution. Therefore, these data were normally distributed. Other data, namely CH4 and Fgas, obtained a p-value less than 0.05 (even transforming these two variables by taking the log and square root), which indicated they were not normally distributed. However, from the normal Q-Q plot, the scatters lied close to the line and symmetry across the qq normal line, so these two data could still be seen as normally distributed. All GHG emissions by sector obtained p-values greater than 0.05 from the shapiro.test, so they were normally distributed. Parametric tests would be used for all GHG dataset.
 
 ```{r include = FALSE}
 
@@ -495,11 +495,11 @@ shapiro.test(allGHG$Residential)
 
 ```
 
-Multiple Linear Regression was conducted between CO2 and other GHGs to see if there could be any relationships between CO2 and other GHGs, as there are always multiple GHGs emitted together from a source. The result illustartes that at least one of GHGs is significantly related to the CO2 emission (linear regression; R2=0.5562, dF = 24, p = 0.0001805). Specifically, changes in N2O emissions are significantly related to changes in CO2 emissions, while changes in CH4 and Fgas are not significantly related to CO2 emissions.
+Multiple Linear Regression was conducted between CO2 and other GHGs to see if there could be any relationships between CO2 and other GHGs, as there are always multiple GHGs emitted together by one source. The result illustarted that at least one of GHGs was significantly related to the CO2 emission (linear regression; R2=0.5562, dF = 24, p = 0.0001805). Specifically, changes in N2O emissions were significantly related to changes in CO2 emissions, while changes in CH4 and Fgas were not significantly related to CO2 emissions.
 
-To step further, a correlation plot was created to reveal the possible relationships, as well as covariance among explanatory variables, as shown in Figure 6, in which blue indiates positively correlated and red indicate negatively correlated. The smaller ellipse indicates a higher correlationship between two variables, and the dark color implies a higher correlation cofficient. Therefore, both N2O and Fgas have positive correlationship with CO2, but N2O is more correlated and has a higher correlation coeffeicnt; on the other hand, CH4 has a negative correlationship with CO2 and such correlation is not significant as the ellipse is large. However, it is interesting to see CH4 and Fgas have a strong negative correlationship. Another format to observe the correlationship with CO2 concentration is shown in Figure 7.
+To step further, a correlation plot was created to reveal the possible relationships, as well as covariance among explanatory variables, as shown in Figure 6, in which blue indiates positively correlated and red indicate negatively correlated. The smaller ellipse indicates a higher correlationship between two variables, and the dark color implies a higher correlation cofficient. Therefore, both N2O and Fgas had positive correlationships with CO2, but N2O was more correlated and had a higher correlation coeffeicnt; on the other hand, CH4 had a negative correlationship with CO2 and such correlation was not significant as the ellipse was large. However, it was interesting to see CH4 and Fgas had a strong negative correlationship. Another format to observe the correlationship with CO2 concentration was shown in Figure 7.
 
-Based on this reuslt, Akaike’s Information Criterion (AIC) were computed to improve the model to best predict impacts on CO2 emission, from which only N2O and CH4 were remained in the improved model (Step:  AIC=306.73). The improved model implies that both CH4 and N2O emissions are significantly related to CO2 emissions (linear regression; R2=0.5461, dF = 25, p < 0.0001).
+Based on this reuslt, Akaike’s Information Criterion (AIC) were computed to improve the model to best predict impacts on CO2 emission, from which only N2O and CH4 were remained in the improved model (Step:  AIC=306.73). The improved model implied that both CH4 and N2O emissions were significantly related to CO2 emissions (linear regression; R2=0.5461, dF = 25, p < 0.0001).
 
 ```{r include = FALSE}
 GHG.gas.regression <- lm(data=allGHG, CO2~ CH4+N2O+Fgas)
@@ -539,11 +539,11 @@ plot_grid(CO2byCH4 + xlab(''),
 ```
 
 \newpage
-Similarly, multiple Linear Regression was aslo conducted among sectoral GHG emissions to see which sector is most significant to electricity generation sector, which has the highest GHG emission, as well as relying on electricity use.
+Similarly, multiple Linear Regression was also conducted among sectoral GHG emissions to see which sector was significant to electricity generation sector, which had the highest GHG emissions.
 
-The result illustartes that multiple sectors have significant relationships with electricity generation sector (linear regression; R2=0.8566, dF = 22, p < 0.0001). Specifically, emission changes in agriculture, commercial, and residential sectors are significantly related to emission changes in electricity generation sector, while changes in transporation and industry sectors are not significantly related to electricity generation emissions, which was also proved by AIC test that best model would be three significant explanatory variables.
+The result illustarted that multiple sectors had significant relationships with electricity generation sector (linear regression; R2=0.8566, dF = 22, p < 0.0001). Specifically, emission changes in agriculture, commercial, and residential sectors were significantly related to emission changes in electricity generation sector, while changes in transporation and industry sectors were not significantly related to electricity generation emissions. This result was also proved by AIC test that best model would be three significant explanatory variables.
 
-As illustrated by the correlation plot in Figure 8, covariances among expanatory variables show interesting results. Transporation sector is more positively correlated to electricity generation than agriculture and residential sectors. Industry sector has litte correlation with electricity generation while commercial is negatively correlated. 
+The correlation plot in Figure 8 shows some interesting results of covariances among expanatory variables. Transporation sector was more positively correlated to electricity generation than agriculture and residential sectors. Industry sector had litte correlation with electricity generation while commercial was negatively correlated. 
 
 ```{r include = FALSE}
 GHG.regression <- lm(data=allGHG, Electricity_generation~Transportation+Industry+Agriculture+Commercial+Residential)
@@ -562,9 +562,9 @@ corrplot(allGHG.corr, method = "ellipse", tl.cex = 0.5)
 \newpage
 
 ###Did total electricity consumption differ among sectors?
-The first impact factor on GHG emissions to study is the domestic electricity consumption. Similar to previous sections, there was no general consumption trend among sectors, a detailed exploration on electricity consumption dataset was first conducted. Specifically, this section addresses on if electricity consumptions were significantly different among various sectors.
+The first impact factor on GHG emissions to study is the domestic electricity consumption. As illustrated in the previous section, there was no general consumption trend among sectors. Therefore, a detailed exploration on electricity consumption dataset was first conducted. Specifically, this section addresses on if electricity consumptions were significantly different among various sectors.
 
-First, all data were gathered by sector and tested for the normality. The normal Q-Q plot shows that the emissions are normally distributed. Then, one-way Anova was tested, reflecting that electricity consumptions were significantly differed among various sectors (ANOVA, R2=0.2598, dF = 81, p < 0.0001). A post-hoc test was then run to look at the pairwise differences, and the result was shown as Figure 9.
+First, all data were gathered by sector and tested for the normality. The normal Q-Q plot shows that the emissions were normally distributed. Then, one-way Anova was tested, reflecting that electricity consumptions were significantly differed among various sectors (ANOVA, R2=0.2598, dF = 81, p < 0.0001). A post-hoc test was then run to look at the pairwise differences, and the result was shown in Figure 9, which illustrates that three sectors were significantly different from each other.
 
 ```{r include = FALSE}
 newelectricity.select <- newelectricity %>%
@@ -609,9 +609,9 @@ print(newelectricity.graph)
 \newpage
 
 ### Were electricity comsupmtions significant to total GHG emissions?
-This section answers the first question in the introduction - if the electricity consumption was significant to total GHG emissions. A multiple linear regression was run to see the relationship. The result shows that there is no significant relationship between electricity consumption and total GHG concentrations (linear regression, R2=0.2623, dF = 24, p = 0.05896), among which elec_industrial sector is the only significant variable. Since the p-value is close to 0.05 significane level, the AIC test was conducted to see the better model. The improve model from the test is the test between the total GHG emission and electricity consumption in industiral sector (Step:  AIC=321.5), and the result from the linera regression also indicates the significant relationship between them (linear regression, R2=0.1774, dF = 26, p = 0.0214). 
+After looking at two datasets themselves, this section starts to answering the first question mentioned in the introduction - if the electricity consumption was significant to total GHG emissions. A multiple linear regression was run to see the relationship. The result showed that there was no significant relationship between electricity consumption and total GHG concentrations (linear regression, R2=0.2623, dF = 24, p = 0.05896), among which elec_industrial sector was the only significant variable. Since the p-value was close to 0.05 significane level, the AIC test was conducted to see the better model. The improved model was the test between the total GHG emission and electricity consumption in industrial sector (Step:  AIC=321.5), and the result from the linear regression also indicated the significant relationship between them (linear regression, R2=0.1774, dF = 26, p = 0.0214). 
 
-The relationships of three explanatroy data with total GHG concentration are illustrated in Figure 10, in which commerncial electricity consumption data and residential electricity consumption data are away from the respective regression line, which results in the insignificant relationship with total GHG concentration.
+The relationships of three explanatroy data with total GHG concentration were illustrated in Figure 10, in which commerncial electricity consumption data and residential electricity consumption data are away from the respective regression line, which results in the insignificant relationships with total GHG concentration.
 
 
 ```{r include = FALSE}
@@ -650,7 +650,7 @@ print(GHGbyelec)
 \newpage
 
 ###Is population growth significant to total GHG concentration?
-Another factor that might affect GHG concentration attributed to human activities is population growth. This question was inspired by observing from the increasing trend of both GHG emissions and population. The shapiro test shows that the population data is normally distributed (W = 0.95398, p-value = 0.249). Then, a simple linear regression was conducted, which illustates there is no significant relationship between total GHG emissions and population growth (linear regression, R2 = 0.0007, dF = 26, p = 0.8948). The relationship between these two variables is displayed in Figure 11, which is not in a linear relationship.
+Another factor that might affect GHG concentration attributed to human activities is population growth. This question was inspired by observing from the increasing trends of both GHG emissions and population. The shapiro test showed that the population data was normally distributed (W = 0.95398, p-value = 0.249). Then, a simple linear regression was conducted, which illustated there was no significant relationship between total GHG emissions and population growth (linear regression, R2 = 0.0007, dF = 26, p = 0.8948). The relationship between these two variables was displayed in Figure 11, which is not in a linear relationship.
 
 ```{r include = FALSE}
 shapiro.test(GHG_contribute$US_pop)
@@ -679,13 +679,13 @@ print(GHGpop.plot)
 ##Question 2: What were impacts of GHG emissions in these 28 years?
 
 ### Which sectors of GHG emissions were significant to temperature anomaly?
-Temperature is one of the most explicit impacts of GHG emissions. Instead of looking at sepcific types of GHGs, this project addresses on the impacts of sectoral emissions on temperature change, and aims to figure out which sector was more significant to the temperature. 
+Temperature is one of the most explicit impacts of GHG emissions. Instead of looking at sepcific types of GHGs, this project addresses on the impacts of sectoral emissions on the temperature change, and aims to figure out which sector was significant to the temperature. 
 
-The first step to achieve such goal was to study the chaning trend of temperature, specifically conducting a timer series analysis to see how the temperature had change over the 28-year period in US. The result shows that there was no significant trend of temperature change over the period of 1990-2017 in US (Mann-Kendall trend test z=1.758, p-value = 0.07869).
+The first step to achieve such goal was to study the chaning trend of temperature, specifically conducting a timer series analysis to see how the temperature had change over the 28-year period in US. The result showed that there was no significant trend of temperature change over the period of 1990-2017 in US (Mann-Kendall trend test z=1.758, p-value = 0.07869).
 
-Then, the shapiro.test was conducted to confirm the normality of temperature anomaly data for the preparation o linear regression (W = 0.98866, p-value = 0.9863). The result from the multiple linear regression illustartes that there was a significant relationship between temperature anomaly and sectoral emissions (linear regression, R2 = 0.8219, dF = 21, p < 0.0001). Specifically, emissions from transporation sector, agriculture sector, and residential sector were significant to such change. An AIC test were computed to improve the model to best illustrate explanatory variables in such relationship, and the improved model includes transportation, agiculture, commercial, and residential sectors (Step:  AIC=-42.11). The multiple linear regression result proves that all of these sectoral emissions were significant to temperature anomaly (linear regression, R2 = 0.816, dF = 23, p < 0.0001). 
+Then, the shapiro.test was conducted to confirm the normality of temperature anomaly data for the preparation of the linear regression (W = 0.98866, p-value = 0.9863). The result from the multiple linear regression illustarted that there was a significant relationship between temperature anomaly and sectoral emissions (linear regression, R2 = 0.8219, dF = 21, p < 0.0001). Specifically, emissions from transporation sector, agriculture sector, and residential sector were significant to such change. An AIC test were computed to improve the model to best illustrate explanatory variables in such a relationship, and the improved model included transportation, agiculture, commercial, and residential sectors (Step:  AIC=-42.11). The multiple linear regression result proved that all of these sectoral emissions were significant to temperature anomaly (linear regression, R2 = 0.816, dF = 23, p < 0.0001). 
 
-A correlation plot was then created to visualized the correlationship and covariance between these variables. As shown in Figure 12, residential emissions and commercial emissions were mroe correlated to temperature anomaly changes in a negative trend, while transportation emission and agriculture emissions were correlated to temperature anomaly in a positive trend.
+A correlation plot was then created to visualize the correlationship and covariance between these variables. As shown in Figure 12, residential emissions and commercial emissions were mroe correlated to temperature anomaly changes in negative trends, while transportation emission and agriculture emissions were correlated to temperature anomaly in positive trends.
 
 ```{r include = FALSE}
 GHGtemp_data<- full_join(allGHG, newtemp, by='Year')
@@ -710,12 +710,12 @@ GHGsector.temp <- GHGtemp_data %>%
 GHGsector.temp.corr <- cor(GHGsector.temp)
 ```
 
-```{r echo = FALSE, message=FALSE, warning=FALSE, fig.cap= "Correlation Plot between US Mean Annual Temperature and Sectoral GHG Emissions"}
+```{r echo = FALSE, message=FALSE, warning=FALSE, fig.cap= "Correlation Plot between US Mean Annual Temperature Anomaly and Sectoral GHG Emissions"}
 corrplot(GHGsector.temp.corr, method = "ellipse", tl.cex = 0.5)
 ```
 
 ### Was total GHG emissions significant to GDP growth?
-As most GHGs were emitted by human activities, were such emissions significant to economic development? In this proejct, GDP was selected as the parameter to assess economic development. A similar time series analysis was conducted to assess if GDP had change over the study period in US. The result shows that there a significant increasing trend of GDP change over the period of 1990-2017 in US (Mann-Kendall trend test z= 5.05, p-value < 0.0001).
+As most GHGs were emitted by human activities, were such emissions significant to economic development? In this proejct, GDP was selected as the parameter to assess economic development. A similar time series analysis was conducted to assess if GDP had change over the study period in US. The result showed that there was a significant increasing trend of GDP change over the period of 1990-2017 in US (Mann-Kendall trend test z= 5.05, p-value < 0.0001).
 
 GDP data was normally distributed according to shapio.test (W = 0.9486, p-value = 0.1827). However, there was no significant relationship between total GHG emissions and GDP growth over the time (linear regression, R2 = 0.0004, dF = 26, p = 0.7499). Such result was visualized in Figure 13, which illustrates that variables were dispersed away from the linear trend line.
 
@@ -748,14 +748,11 @@ print(GHGgdp.plot)
 
 As Global Warming is a more server problem, GHG emissions as one of the most responsible factors are addressing more people's attention. This project studies the factors that might contribute to GHG emissions and also the potential impacts of GHG emissions in US from 1990-2017. 
 
-The first part of the project looked at the electricity consumption of which sector is significant to total GHG emissions and examined if population growth is significant to total GHG emission during this period. The tests from linear regression revealed that industrial electricity consumption was significant to total GHG emissions, and there was no significant relationship between population growth and total GHG emissions. In this section, the relationships among different types of GHGs as well as the relationships among sectoral emissions were also explored. By running different types of generalized linear models, the results illustrated that in 1990-2017:
+The first part of the project looked at the electricity consumption of which sector is significant to total GHG emissions and examined if population growth is significant to total GHG emission during this period. The tests from linear regression revealed that industrial electricity consumption was significant to total GHG emissions, and there was no significant relationship between population growth and total GHG emissions. In this section, the relationships among different types of GHGs as well as the relationships among sectoral emissions were also explored. By running different types of generalized linear models, the results illustrated that in 1990-2017: 
 
-1. CH4 and N2O emissions were significantly related to CO2 emissions;
-
-2. CH4 and Fgas were strongly correlated;
-
-3. Emissions in agriculture, commercial, and residential sectors were significantly related to emissions in electricity generation sector;
-
+1. CH4 and N2O emissions were significantly related to CO2 emissions;         
+2. CH4 and Fgas were strongly correlated;         
+3. Emissions in agriculture, commercial, and residential sectors were significantly related to emissions in electricity generation sector;          
 4. Electricity consumptions were significantly different among various sectors.
 
 The second part analyzed the potential impacts of GHG emissions, specifically referring to temperature anomaly changes and GDP growth. Time series analysis was first conducted to evaluate how these two variables have changed over time, and the results demonstrated that there was no significant trend of temperature, and there was a significant increasing trend of GDP over 28 years. For temperature change, emissions in transportation, agiculture, commercial, and residential sectors were most significant to temperature anomalies; however, there was no significant relationship between total GHG emissions and GDP growth over the period.
