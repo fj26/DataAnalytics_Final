@@ -61,7 +61,7 @@ structure <- read.csv('./Processed Data/Processed_Data_Structure.csv')
 
 Global warming resulted from greenhouse gas (GHG) emissions is one of the biggest challenges to human beings. While IPCC in its latest special report warns people the critial consequences of 1.5-degree-Celcius temperature increase from the pre-industrial level, the average global temperature on Earth has already increased by about 0.8° Celsius (1.4° Fahrenheit) since 1880. 
 
-In the United States, in the period of 1990-2017, the temperature increase and GHG emissions have been greatly contribetd by the energy sector. This was attributed to the increase electricity consumptions in all sectors by more people, and electricity generation primarily relies on fossil-fuel combustions. In addition to temperature increase, the economic features also have significant changes along the increasing GHG emissions and electricity consumption in the meantime. Understanding environmental and socioeconomic impacts of GHG emissions is significant to policy makers to consider long-term decision making. Therefore, this project examines the impacts of energy consumptions and demographic changes on GHG emissions, as well as further investigates the environmental and economic effects of GHG emissions in the United States from 1990 to 2017. 
+In the United States, in the period of 1990-2017, the temperature increase and GHG emissions have been greatly contributed by the energy sector. This was attributed to the increase electricity consumptions in all sectors by more people, and electricity generation primarily relies on fossil-fuel combustions. In addition to temperature increase, the economic features also have significant changes along the increasing GHG emissions and electricity consumption in the meantime. Understanding environmental and socioeconomic impacts of GHG emissions is significant to policy makers to consider long-term decision making. Therefore, this project examines the impacts of energy consumptions and demographic changes on GHG emissions, as well as further investigates the environmental and economic effects of GHG emissions in the United States from 1990 to 2017. 
 
 Specifically, this project aims to study factors that might contribute to GHG emissions guided by the following questions:
 
@@ -464,7 +464,7 @@ GHG_impact <- full_join(newGDP, newtemp, by = 'Year')
 \newpage
 
 #Analysis
-*Figures in this sections are disordered - the float package was not compatible to my system. All statements in this section will describe which specific figures are referring to in certain analyses.*
+*Figures in this sections are disordered - the float package was not compatible to my system. Texts in this section will specify which figures are referring to in certain analyses.*
 
 ##Question 1: What factors have contributed to GHG emissions in these 28 years?
 
@@ -676,15 +676,18 @@ print(GHGpop.plot)
 
 \newpage
 
-##Question 2: 
-### GHGs and temperature 
-which sector emission is significant to temperature anomaly?
-```{r include = FALSE}
-shapiro.test(newtemp$Anomaly)
-#time series analysis- Mann-Kendall
-#The null hypothesis of the test is that there is no trend in the data and the alternative hypothesis is that the data represents a monotonic trend.
+##Question 2: What were impacts of GHG emissions in these 28 years?
 
-#If the p-value is less than 0.05, we reject the null hypothesis.
+### Which sectors of GHG emissions were significant to temperature anomaly?
+Temperature is one of the most explicit impacts of GHG emissions. Instead of looking at sepcific types of GHGs, this project addresses on the impacts of sectoral emissions on temperature change, and aims to figure out which sector was more significant to the temperature. 
+
+The first step to achieve such goal was to study the chaning trend of temperature, specifically conducting a timer series analysis to see how the temperature had change over the 28-year period in US. The result shows that there was no significant trend of temperature change over the period of 1990-2017 in US (Mann-Kendall trend test z=1.758, p-value = 0.07869).
+
+Then, the shapiro.test was conducted to confirm the normality of temperature anomaly data for the preparation o linear regression (W = 0.98866, p-value = 0.9863). The result from the multiple linear regression illustartes that there was a significant relationship between temperature anomaly and sectoral emissions (linear regression, R2 = 0.8219, dF = 21, p < 0.0001). Specifically, emissions from transporation sector, agriculture sector, and residential sector were significant to such change. An AIC test were computed to improve the model to best illustrate explanatory variables in such relationship, and the improved model includes transportation, agiculture, commercial, and residential sectors (Step:  AIC=-42.11). The multiple linear regression result proves that all of these sectoral emissions were significant to temperature anomaly (linear regression, R2 = 0.816, dF = 23, p < 0.0001). 
+
+A correlation plot was then created to visualized the correlationship and covariance between these variables. As shown in Figure ???, residential emissions and commercial emissions were mroe correlated to temperature anomaly changes in a negative trend, while transportation emission and agriculture emissions were correlated to temperature anomaly in a positive trend.
+
+```{r include = FALSE}
 GHGtemp_data<- full_join(allGHG, newtemp, by='Year')
 GHGtemp.ts <- ts(GHGtemp_data$Value, start=c(1990), end=c(2017), frequency=1)
 class(GHGtemp.ts)
@@ -692,11 +695,8 @@ GHGtemp.ts.vector <- as.numeric(GHGtemp.ts)
 class(GHGtemp.ts.vector)
 GHGtemp.trend <- mmkh(GHGtemp.ts.vector, ci=0.95)
 GHGtemp.trend
-summary(GHGtemp.trend)
 
-
-#linear regression
-##a p-value of 5% or less is a good cut-off point. In our model example, the p-values are very close to zero. Note the ‘signif. Codes’ associated to each estimate. Three stars (or asterisks) represent a highly significant p-value. Consequently, a small p-value for the intercept and the slope indicates that we can reject the null hypothesis which allows us to conclude that there is a relationship between speed and distance.
+shapiro.test(newtemp$Anomaly)
 GHG.temp.regression <- lm(GHGtemp_data,formula = Anomaly~  Transportation+Electricity_generation+Industry+Agriculture+Commercial+Residential)
 summary(GHG.temp.regression)
 
@@ -705,36 +705,21 @@ step(GHG.temp.regression)
 GHG.temp.regression.improve <- lm(formula = Anomaly ~ Transportation + Agriculture + Commercial + Residential, data = GHGtemp_data)
 summary(GHG.temp.regression.improve)
 
-
 GHGsector.temp <- GHGtemp_data %>%
   select(Transportation:Residential, Anomaly)
-
-cor.test(GHGsector.temp$Anomaly, GHGsector.temp$Transportation)
-cor.test(GHGsector.temp$Anomaly, GHGsector.temp$Electricity_generation)
-cor.test(GHGsector.temp$Anomaly, GHGsector.temp$Industry)
-cor.test(GHGsector.temp$Anomaly, GHGsector.temp$Agriculture)
-cor.test(GHGsector.temp$Anomaly, GHGsector.temp$Commercial)
-cor.test(GHGsector.temp$Anomaly, GHGsector.temp$Residential)
-
 GHGsector.temp.corr <- cor(GHGsector.temp)
-```
-
-```{r echo = FALSE, message=FALSE, warning=FALSE, fig.cap= "Checking Model Fit and Assumptions for the Relationship between US Mean Annual Temperature and Sectoral Emissions"}
-par(mfrow = c(2,2), mar=c(1,1,1,1))
-plot(GHG.temp.regression.improve)
-par(mfrow = c(1,1))
 ```
 
 ```{r echo = FALSE, message=FALSE, warning=FALSE, fig.cap= "Correlation Plot between US Mean Annual Temperature and Sectoral GHG Emissions"}
 corrplot(GHGsector.temp.corr, method = "ellipse", tl.cex = 0.5)
-
 ```
 
-### GHG and GDP
-Is GHG emission significant to GDP growth?
-```{r include = FALSE}
-shapiro.test(newGDP$GDP)
+### Was total GHG emissions significant to GDP growth?
+As most GHGs were emitted by human activities, were such emissions significant to economic development? In this proejct, GDP was selected as the parameter to assess economic development. A similar time series analysis was conducted to assess if GDP had change over the study period in US. The result shows that there a significant increasing trend of GDP change over the period of 1990-2017 in US (Mann-Kendall trend test z= 5.05, p-value < 0.0001).
 
+GDP data was normally distributed according to shapio.test (W = 0.9486, p-value = 0.1827). However, there was no significant relationship between total GHG emissions and GDP growth over the time (linear regression, R2 = 0.0004, dF = 26, p = 0.7499). Such result was visualized in Figure ???, which illustrates that variables were dispersed away from the linear trend line.
+
+```{r include = FALSE}
 GHGgdp_data<- full_join(allGHG, newGDP, by='Year')
 GHGgdp.ts <- ts(GHGgdp_data$GDP, start=c(1990), end=c(2017), frequency=1)
 class(GHGgdp.ts)
@@ -744,19 +729,12 @@ GHGgdp.trend <- mmkh(GHGgdp.ts.vector, ci=0.95)
 GHGgdp.trend
 summary(GHGtemp.trend)
 
-GDP.anova <- lm(data=GHGgdp_data, Total~GDP+Personal_consumption)
+shapiro.test(newGDP$GDP)
+GDP.anova <- lm(data=GHGgdp_data, Total~GDP)
 summary(GDP.anova) 
-step(GDP.anova)
-```
-
-```{r echo = FALSE, message=FALSE, warning=FALSE, fig.cap= "Checking Model Fit and Assumptions for the Relationship between US GDP and Total GHG Emissions"}
-par(mfrow = c(2,2), mar=c(1,1,1,1))
-plot(GDP.anova)
-par(mfrow = c(1,1))
 ```
 
 ```{r echo = FALSE, message=FALSE, warning=FALSE, fig.cap= "Relationship between US GDP and Total GHG Emissions"}
-# Add a line and standard error for the linear regression
 GHGgdp.plot <- ggplot(GHGgdp_data, aes(x = Total, y = GDP)) + 
   geom_smooth(method = "lm") +
   labs(y= 'GDP (US$ billion)', x= bquote(bold('Total GHG Emission (MMT'~CO[2]~'e)')))+
@@ -768,9 +746,14 @@ print(GHGgdp.plot)
 
 # Summary and Conclusions
 
+As Global Warming is a more server problem, GHG emissions as one of the most responsible factors are addressing more people's attention. This project studies the factors that might contribute to GHG emissions and also the potential impacts of GHG emission in US from 1990-2017. 
 
-\newpage
+The first part of project looks at the electricity consumption of which sector is significant to total GHG emissions and examines if population growth is significant to total GHG emission during this period. The tests from linear regression reveal that industrial electricity consumption is significant to total GHG emissions, and there is no significant relationship between population growth and total GHG emissions. In this section, the relationships among different types of GHGs as well as the relationships among sectoral emissions were also explored. By running different types of generalized linear models, the results illustrate that:
+1. CH4 and N2O emissions are significantly related to CO2 emissions;
+2. CH4 and Fgas are strongly correlated;
+3. Emissions in agriculture, commercial, and residential sectors are significantly related to emissions in electricity generation sector;
+4. Electricity consumptions are significantly different among various sectors.
 
-# References
-<add references here if relevant, otherwise delete this section> 
-https://ww2.arb.ca.gov/ghg-2020-limit
+The second part analyzes the potential impacts of GHG emissions, specifically referring to temperature anomaly changes and GDP growth. Time series analysis was first conducted to evaluate how these two variables have changed over time, and the results demonstrated that there was no significant trend of temperature, and there was a significant increasing trend of GDP over 28 years. For temperature change, emissions in transportation, agiculture, commercial, and residential sectors were most significant to temperature anomalies; however, there was no significant relationship between total GHG emissions and GDP growth over the period.
+
+This project is still a prelinary research on analyzing factors and impacts GHG emissions with many limitations. For example, the temporal range - 28 years - is short. Such factor was restricted by the data availability, while the GHG emissions always have a lag effects; that says, the impacts of GHG emissions, especially on temperature change, will not be revealed immediately. Also, the study on temperature change should be considered at a long-term scale, i.e. from pre-industrial period. Also, the geographic scale is also too broad. Different states in US have their only regulatories on GHG emissions, such as California as a leader on reducing GHG emissions over a long time. The analysis at the national level cannot illustrte the progress of policy inplementation. However, this project is still helpful to learn from the past about the causes and consequences of GHG emissions, as a reference as well as a warning to decision markers to think about the environmental impacts of emissions in the future.
