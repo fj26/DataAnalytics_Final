@@ -16,8 +16,8 @@ Specifically, this project aims to study factors that might contribute to GHG em
 
 Following up with GHG emission causes, this project will then explore the impacts of GHG emissions in US from 1990 to 2017 guided by the following questions: 
 
-3. Which sectors were more significant to temperature anomalies in this period?
-4. Was the economic development in this period, namely gross domestic product (GDP) and personal consumption expenditures, significantly realted to the GHG emissions? 
+3. Which sectors were significant to temperature anomalies in this period?
+4. Was the total GHG emissions significantly related to economic development in this period, namely gross domestic product (GDP)? 
 
 This repository contains raw data, proecessed data, codes, outputs, and a report involved this project.
 
@@ -214,8 +214,9 @@ Population by country
 
 ## Scripts and code
 
-To be updated.  
-<list any software scripts/code contained in the repository and a description of their purpose.>
+Project.Rmd saved in Code folder contains the text report and R code of statistical analysis and data visualization for this project.
+
+Processed_code.Rmd in the Code folder is a draft file for R code, which should not be used as a reference.
 
 
 ## Quality assurance/quality control
