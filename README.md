@@ -11,8 +11,8 @@ In the United States, in the period of 1990-2017, the temperature increase and G
 
 Specifically, this project aims to study factors that might contribute to GHG emissions guided by the following questions:
 
-1. What were impacts of US electricity consumption changes on GHG emissions from 1990 to 2017? What sectors of electricity econsumption were significant to GHG emissions in these 18 years?
-2. Was the population growth a signifant factor in affecting GHG emissisions in this period?
+1. What were impacts of US electricity consumption changes on GHG emissions from 1990 to 2017? What sectors of electricity econsumption were significant to total GHG emissions in these 28 years?
+2. Was the population growth a signifant factor in affecting total GHG emissions in this period?
 
 Following up with GHG emission causes, this project will then explore the impacts of GHG emissions in US from 1990 to 2017 guided by the following questions: 
 

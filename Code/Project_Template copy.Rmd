@@ -65,7 +65,7 @@ In the United States, in the period of 1990-2017, the temperature increase and G
 
 Specifically, this project aims to study factors that might contribute to GHG emissions guided by the following questions:
 
-1. What were impacts of US electricity consumption changes on GHG emissions from 1990 to 2017? What sectors of electricity econsumption were significant to GHG emissions in these 18 years?
+1. What were impacts of US electricity consumption changes on GHG emissions from 1990 to 2017? What sectors of electricity econsumption were significant to total GHG emissions in these 28 years?
 2. Was the population growth a signifant factor in affecting GHG emissisions in this period?
 
 Following up with GHG emission causes, this project will then explore the impacts of GHG emissions in US from 1990 to 2017 guided by the following questions: 
@@ -204,7 +204,7 @@ print(GDP.line)
 \newpage
 
 ##US Electricity Consumption
-There are three types of industry sector in the raw dataset. In this project, I focused on "Total Electric Industry", which includes all types of survices in electricity consumption in each sector. There are four sectors covered in the electricity consumption dataset, which are illustrateed as Table ???. The values of consumption data are in factor format and separted by commas, so it is necessary to convert these values to numeric variables first. By visualizing electricity consumption data in Figure 2, we can notice that all four graphs are in different consumption scales. Notably, transportation sector has the lowest electricity consumption among all sectors, and also there was no data available for transportation sector in before 2002. Therefore, transporation sector will be filtered out in the next step statistic analysis.
+There are three types of industry sector in the raw dataset. This project focuses on "Total Electric Industry", which includes all types of survices in electricity consumption in each sector. There are four sectors covered in the electricity consumption dataset, which are illustrateed as Table ???. The values of consumption data are in factor format and separted by commas, so it is necessary to convert these values to numeric variables first. By visualizing electricity consumption data in Figure 2, we can notice that all four graphs are in different consumption scales. Notably, transportation sector has the lowest electricity consumption among all sectors, and also there was no data available for transportation sector in before 2002. Therefore, transporation sector will be filtered out in the next step statistic analysis.
 
 ```{r warning = FALSE}
 #Show the structure of the raw dataset
@@ -390,7 +390,7 @@ temp.line <- ggplot(temp.select, aes(x= Year, y=Value))+
   labs(y= expression("Temperature ("*~degree*F*")"),
        title = expression("US Mean Annual Temperature in 1990-2017 ("*~degree*F*")"))+
   scale_x_continuous("Year", labels = as.character(temp.select$Year), breaks = temp.select$Year)+
-  geom_text(x = 2017, y = 53, label = "Average Temperature for 18 Years", hjust = 1, size = 3, color = 'red')+
+  geom_text(x = 2017, y = 53, label = "Average Temperature for 28 Years", hjust = 1, size = 3, color = 'red')+
   theme(legend.position = "none", axis.title.x = element_blank(), axis.text.x = element_blank())
 
 temp.select$colour <- ifelse(temp.select$Anomaly < 0, "negative","positive")
@@ -466,17 +466,12 @@ GHG_impact <- full_join(newGDP, newtemp, by = 'Year')
 #Analysis
 *Figures in this sections are disordered - the float package was not compatible to my system. All statements in this section will describe which specific figures are referring to in certain analyses.*
 
-##Question 1: What factors have contributed to GHG emissions in these 18 years?
+##Question 1: What factors have contributed to GHG emissions in these 28 years?
 
 ###Are emissions of different GHGs related to each other?
 As discussed in Chapter 3, there is no general trend for the concentration of all GHGs. Therefore, before delving into external impacts on GHG concentrations, how different types of GHGs were varied from each other were first studied.
 
 The distribution of all GHG data were assessed with shapiro.test. Most p-values are  greater than 0.05, which implies that the distribution of these data re not significantly different from normal distribution. Therefore, these data are normally distributed. Other data, namely CH4 and Fgas, obtain a p-value less than 0.05 (even transforming these two variables by taking the log and square root), which indicate they are not normally distributed. However, from the normal Q-Q plot, the scatters lie close to the line and symmetry across the qq normal line, so these two data can still be seen as normally distributed. All GHG emissions by sector obtain p-values greater than 0.05 from the shapiro.test, so they are normally distributed. Parametric tests will be used for all GHG dataset.
-
-One-sample t-test was first conducted to assess the null hypothesis that the mean of allGHG dataset is equal to the mean of total . For example, we might ask ourselves (from the EPA air quality processed dataset): 
-
-Are Ozone levels below the threshold for "good" AQI index (0-50)?
-lm - look at explainations here https://feliperego.github.io/blog/2015/10/23/Interpreting-Model-Output-In-R
 
 ```{r include = FALSE}
 
@@ -491,7 +486,6 @@ shapiro.test(sqrt(allGHG$CH4))
 shapiro.test(sqrt(allGHG$Fgas))
 qqnorm(allGHG$CH4);qqline(allGHG$CH4)
 
-
 shapiro.test(allGHG$Transportation)
 shapiro.test(allGHG$Electricity_generation)
 shapiro.test(allGHG$Industry)
@@ -499,12 +493,14 @@ shapiro.test(allGHG$Agriculture)
 shapiro.test(allGHG$Commercial)
 shapiro.test(allGHG$Residential)
 
-allsample <- t.test(allGHG, mu=mean(allGHG$Total), alternative = 'less')
-allsample
-
 ```
 
-lm: a small p-value for the intercept and the slope indicates that we can reject the null hypothesis which allows us to conclude that there is a relationship between speed and distance.
+Multiple Linear Regression was conducted between CO2 and other GHGs to see if there could be any relationships between CO2 and other GHGs, as there are always multiple GHGs emitted together from a source. The result illustartes that at least one of GHGs is significantly related to the CO2 emission (linear regression; R2=0.5562, dF = 24, p = 0.0001805). Specifically, changes in N2O emissions are significantly related to changes in CO2 emissions, while changes in CH4 and Fgas are not significantly related to CO2 emissions.
+
+To step further, a correlation plot was created to reveal the possible relationships, as well as covariance among explanatory variables, as shown in Figure ???, in which blue indiates positively correlated and red indicate negatively correlated. The smaller ellipse indicates a higher correlationship between two variables, and the dark color implies a higher correlation cofficient. Therefore, both N2O and Fgas have positive correlationship with CO2, but N2O is more correlated and has a higher correlation coeffeicnt; on the other hand, CH4 has a negative correlationship with CO2 and such correlation is not significant as the ellipse is large. However, it is interesting to see CH4 and Fgas have a strong negative correlationship. Another format to observe the correlationship with CO2 concentration is shown in Figure ???.
+
+Based on this reuslt, Akaike’s Information Criterion (AIC) were computed to improve the model to best predict impacts on CO2 emission, from which only N2O and CH4 were remained in the improved model (Step:  AIC=306.73). The improved model implies that both CH4 and N2O emissions are significantly related to CO2 emissions (linear regression; R2=0.5461, dF = 25, p < 0.0001).
+
 ```{r include = FALSE}
 GHG.gas.regression <- lm(data=allGHG, CO2~ CH4+N2O+Fgas)
 summary(GHG.gas.regression)
@@ -516,103 +512,80 @@ summary(GHG.gas.regression.improve)
 allGHG.bygas <- allGHG %>%
   select(CO2:Fgas)
 
-cor.test(allGHG.bygas$CO2, allGHG.bygas$CH4)
-cor.test(allGHG.bygas$CO2, allGHG.bygas$N2O)
-cor.test(allGHG.bygas$CO2, allGHG.bygas$Fgas)
 #Visualize this result
 allGHG.gas.corr <- cor(allGHG.bygas)
-```
-
-```{r echo = FALSE, message=FALSE, warning=FALSE, fig.cap= "Checking Model Fit and Assumptions for US GHG Concentration by Gas"}
-par(mfrow = c(2,2), mar=c(1,1,1,1))
-plot(GHG.gas.regression.improve)
-par(mfrow = c(1,1))
 ```
 
 ```{r echo = FALSE, message=FALSE, warning=FALSE, fig.cap= "Correlation Plot of US GHG Concentration by Gas"}
 corrplot(allGHG.gas.corr, method = "ellipse", tl.cex = 0.5)
 ```
 
-\newpage
+```{r echo = FALSE, message=FALSE, warning=FALSE, fig.cap= "Correlationships between CO2 and other GHGs"}
+CO2byN2O <-ggplot(allGHG.bygas, aes(x = CO2, y = N2O)) +
+  geom_point() +
+  geom_smooth(method = 'lm', se = TRUE, color = "red")
+CO2byCH4 <-ggplot(allGHG.bygas, aes(x = CO2, y = CH4)) +
+  geom_point() +
+  geom_smooth(method = 'lm', se = TRUE, color = "blue")
+CO2byFgas <-ggplot(allGHG.bygas, aes(x = CO2, y = Fgas)) +
+  geom_point() +
+  geom_smooth(method = 'lm', se = TRUE, color = "pink")+
+  labs(x=bquote(bold(~CO[2]~' Concentration (MMT'~CO[2]~'e)')))
 
-###Are sectoral GHG emissions significantly different from each other? How sectoral emissions contribute to total emissions (correlation)? (Lec12 - multiple regression)
-cor.test: If the p-value is < 5%, then the correlation between x and y is significant.
+plot_grid(CO2byCH4 + xlab(''), 
+          CO2byN2O + xlab (''),
+          CO2byFgas,
+          nrow = 3, align = 'v')
+```
+
+\newpage
+Similarly, multiple Linear Regression was aslo conducted among sectoral GHG emissions to see which sector is most significant to electricity generation sector, which has the highest GHG emission, as well as relying on electricity use.
+
+The result illustartes that multiple sectors have significant relationships with electricity generation sector (linear regression; R2=0.8566, dF = 22, p < 0.0001). Specifically, emission changes in agriculture, commercial, and residential sectors are significantly related to emission changes in electricity generation sector, while changes in transporation and industry sectors are not significantly related to electricity generation emissions, which was also proved by AIC test that best model would be three significant explanatory variables.
+
+As illustrated by the correlation plot in Figure ???, covariances among expanatory variables show interesting results. Transporation sector is more positively correlated to electricity generation than agriculture and residential sectors. Industry sector has litte correlation with electricity generation while commercial is negatively correlated. 
+
 ```{r include = FALSE}
-##sectoral emissions differ from each other?
-GHG.regression <- lm(data=allGHG, Transportation~ Electricity_generation+Industry+Agriculture+Commercial+Residential)
+GHG.regression <- lm(data=allGHG, Electricity_generation~Transportation+Industry+Agriculture+Commercial+Residential)
 summary(GHG.regression)
 step(GHG.regression)
 
-#how contribute to total emission - correlation
-cor.test(allGHG$Total,allGHG$Transportation)
-cor.test(allGHG$Total,allGHG$Electricity_generation)
-cor.test(allGHG$Total,allGHG$Industry)
-cor.test(allGHG$Total,allGHG$Agriculture)
-cor.test(allGHG$Total,allGHG$Commercial)
-cor.test(allGHG$Total,allGHG$Residential)
-
-```
-
-```{r echo = FALSE, message=FALSE, warning=FALSE, fig.cap= "Checking Model Fit and Assumptions for US GHG Emission by Sector"}
-par(mfrow = c(2,2), mar=c(1,1,1,1))
-plot(GHG.regression)
-```
-
-```{r include = FALSE}
-par(mfrow = c(1,1))
 allGHG.bysector <- allGHG %>%
-  select(Total:Residential)
+  select(Transportation:Residential)
 allGHG.corr <- cor(allGHG.bysector)
 ```
 
 ```{r echo = FALSE, message=FALSE, warning=FALSE, fig.cap= "Correlation Plot of US GHG Emission by Sector"}
-par(mfrow = c(1,1))
 corrplot(allGHG.corr, method = "ellipse", tl.cex = 0.5)
 ```
 
 \newpage
 
-###Check dataset- Does total electricity consumption differ among sectors (category vs discrete)?
-Shapiro-Wilk test can be performed as follow:
-Null hypothesis: the data are normally distributed
-Alternative hypothesis: the data are not normally distributed
+###Did total electricity consumption differ among sectors?
+The first impact factor on GHG emissions to study is the domestic electricity consumption. Similar to previous sections, there was no general consumption trend among sectors, a detailed exploration on electricity consumption dataset was first conducted. Specifically, this section addresses on if electricity consumptions were significantly different among various sectors.
 
-lm: If the p-value is less than 0.05, we reject the null hypothesis that there's no difference between the means and conclude that a significant difference does exist.
+First, all data were gathered by sector and tested for the normality. The normal Q-Q plot shows that the emissions are normally distributed. Then, one-way Anova was tested, reflecting that electricity consumptions were significantly differed among various sectors (ANOVA, R2=0.2598, dF = 81, p < 0.0001). A post-hoc test was then run to look at the pairwise differences, and the result was shown as Figure ???.
+
 ```{r include = FALSE}
-newelectricity.gather <- gather(newelectricity, 'Sector', 'Emission', -Year)
+newelectricity.select <- newelectricity %>%
+  select(Year, elec_residential, elec_commercial, elec_industrial)
+  
+newelectricity.gather <- gather(newelectricity.select, 'Sector', 'Consumption', -Year)
 count(newelectricity.gather)
 
-newelectricity.gather$Emission <- str_replace_all(newelectricity.gather$Emission,
+newelectricity.gather$Consumption <- str_replace_all(newelectricity.gather$Consumption,
 pattern = "([,])", replacement = "")
-newelectricity.gather$Emission <- as.numeric(newelectricity.gather$Emission)
+newelectricity.gather$Consumption <- as.numeric(newelectricity.gather$Consumption)
 str(newelectricity.gather)
-#elec.gather2 <- elec.gather %>%
- # filter(!is.na(Electricity_Consumption))
 
-#One-way Anova, test for normality
-shapiro.test(newelectricity.gather$Emission[newelectricity.gather$Sector=='elec_residential'])
-shapiro.test(newelectricity.gather$Emission[newelectricity.gather$Sector=='elec_commercial'])
-shapiro.test(newelectricity.gather$Emission[newelectricity.gather$Sector=='elec_industrial'])
-shapiro.test(newelectricity.gather$Emission[newelectricity.gather$Sector=='elec_transport'])
+#test for normality
+qqnorm(newelectricity.gather$Consumption); qqline(newelectricity.gather$Consumption)
 
-#Test for equal variance
-##a small p-value for the intercept and the slope indicates that we can reject the null hypothesis which allows us to conclude that there is a relationship between speed and distance.
-bartlett.test(newelectricity.gather$Emission ~ newelectricity.gather$Sector)
-
-newelectricity.anova <- aov(data = newelectricity.gather, Emission ~ Sector)
+newelectricity.anova <- aov(data = newelectricity.gather, Consumption ~ Sector)
 summary(newelectricity.anova)
+newelectricity.anova2 <- lm(data = newelectricity.gather, Consumption ~ Sector)
+summary(newelectricity.anova2)
 
-```
-
-```{r echo = FALSE, message=FALSE, warning=FALSE, fig.cap= "Checking Model Fit and Assumptions for US Electricity Consumption"}
-#Checking model fit and assumptions
-# ANOVA is robust against departures from normality.
-par(mfrow = c(2,2), mar=c(1,1,1,1))
-plot(newelectricity.anova)
-
-```
-
-```{r include = FALSE}
 
 # Post-hoc test # Run a post-hoc test for pairwise differences
 TukeyHSD(newelectricity.anova)
@@ -625,18 +598,22 @@ newelectricity.groups
 
 ```{r echo = FALSE, message=FALSE, warning=FALSE, fig.cap= "Post-hoc Test Plot - Pairwise Relationship between Emissions and Sectors"}
 
-newelectricity.graph <- ggplot(newelectricity.gather, aes(x = Sector, y = Emission)) +
+newelectricity.graph <- ggplot(newelectricity.gather, aes(x = Sector, y = Consumption)) +
   geom_boxplot() +
-  theme(axis.text.x = element_text(angle = 45, hjust = 1)) + stat_summary(geom = "text", fun.y = max, vjust = -1, size = 3.5, label = c('b','c','a','d')) +
-  labs(x = "Sector", y = "Emission") 
+  theme(axis.text.x = element_text(angle = 45, hjust = 1)) + stat_summary(geom = "text", fun.y = max, vjust = -1, size = 3.5, label = c('b','c','a')) +
+  labs(x = "Sector", y= 'Electricity Consumption (Mwh)')
 print(newelectricity.graph)
 
 ```
 
 \newpage
 
-### Are electricity comsupmtions in some sectors significant to total GHG emissions?
-lm: If the p-value is less than 0.05, we reject the null hypothesis which allows us to conclude that there is a relationship between speed and distance.
+### Were electricity comsupmtions significant to total GHG emissions?
+This section answers the first question in the introduction - if the electricity consumption was significant to total GHG emissions. A multiple linear regression was run to see the relationship. The result shows that there is no significant relationship between electricity consumption and total GHG concentrations (linear regression, R2=0.2623, dF = 24, p = 0.05896), among which elec_industrial sector is the only significant variable. Since the p-value is close to 0.05 significane level, the AIC test was conducted to see the better model. The improve model from the test is the test between the total GHG emission and electricity consumption in industiral sector (Step:  AIC=321.5), and the result from the linera regression also indicates the significant relationship between them (linear regression, R2=0.1774, dF = 26, p = 0.0214). 
+
+The covariance of three explanatroy data with total GHG concentration are illustrated in Figure ???, in which commerncial electricity consumption data and residential electricity consumption data are away from the respective regression line, which results in the insignificant relationship with total GHG concentration.
+
+
 ```{r include = FALSE}
 ##linear regression - electricity consumption relation to total GHG emissions
 GHG_contribute$elec_residential <- str_replace_all(GHG_contribute$elec_residential,
@@ -648,58 +625,51 @@ GHG_contribute$elec_commercial <- as.numeric(GHG_contribute$elec_commercial)
 GHG_contribute$elec_industrial <- str_replace_all(GHG_contribute$elec_industrial,
 pattern = "([,])", replacement = "")
 GHG_contribute$elec_industrial <- as.numeric(GHG_contribute$elec_industrial)
-GHG_contribute$elec_transport <- str_replace_all(GHG_contribute$elec_transport,
-pattern = "([,])", replacement = "")
-GHG_contribute$elec_transport <- as.numeric(GHG_contribute$elec_transport)
 
-elec.regression <- lm(allGHG$Total ~GHG_contribute$elec_residential + GHG_contribute$elec_commercial + GHG_contribute$elec_industrial + GHG_contribute$elec_transport)
+elec.regression <- lm(allGHG$Total ~GHG_contribute$elec_residential + GHG_contribute$elec_commercial + GHG_contribute$elec_industrial)
 summary(elec.regression)
 
 step(elec.regression)
 
-elecmodel <- lm(formula = allGHG$Total ~ GHG_contribute$elec_residential + 
-    GHG_contribute$elec_transport)
+elecmodel <- lm(formula = allGHG$Total ~ GHG_contribute$elec_industrial)
 summary(elecmodel)
 ```
 
-```{r echo = FALSE, message=FALSE, warning=FALSE, fig.cap= "Checking Model Fit and Assumptions for the Improved Model"}
+```{r echo = FALSE, message=FALSE, warning=FALSE, fig.cap= "Relationships between Total GHG Emissions and Electricity Consumptions"}
+newelectricity.gather_full <- full_join(allGHG, newelectricity.gather, by='Year')
 
-par(mfrow = c(2,2), mar=c(1,1,1,1))
-plot(elecmodel)
-par(mfrow = c(1,1))
+GHGbyelec <-ggplot(newelectricity.gather_full, aes(x = Total, y = Consumption, color = Sector, shape = Sector)) +
+  geom_point() +
+  geom_smooth(method = 'lm', se = FALSE)+
+  labs(x=bquote(bold('Total GHG Emissions (MMT'~CO[2]~'e)')), y='Electricity Consumption (Mwh)')+
+  scale_shape_manual(values=c(3, 16, 17))+ 
+  scale_color_manual(values=c('#999999','#E69F00', '#56B4E9'))
+print(GHGbyelec)
 ```
 
 \newpage
 
-###Is population growth significant to GHG emissions ?
-cor.test: If the p-value is < 5%, then the correlation between x and y is significant.
+###Is population growth significant to total GHG concentration?
+Another factor that might affect GHG concentration attributed to human activities is population growth. This question was inspired by observing from the increasing trend of both GHG emissions and population. The shapiro test shows that the population data is normally distributed (W = 0.95398, p-value = 0.249). Then, a simple linear regression was conducted, which illustates there is no significant relationship between total GHG emissions and population growth (linear regression, R2 = 0.0007, dF = 26, p = 0.8948). The relationship between these two variables is displayed in Figure ???, which is not in a linear relationship.
 
 ```{r include = FALSE}
-shapiro.test(GHG_contribute$US_pop) #normal
+shapiro.test(GHG_contribute$US_pop)
 
 pop.regression <- lm(allGHG$Total ~GHG_contribute$US_pop)
 summary(pop.regression)
-cor.test(allGHG$Total,GHG_contribute$US_pop) #not significant, no relationship, same as lm
 ```
 
-```{r echo = FALSE, message=FALSE, warning=FALSE, fig.cap= "Checking Model Fit and Assumptions for US Population"}
 
-par(mfrow = c(2,2), mar=c(1,1,1,1))
-plot(pop.regression)
-par(mfrow = c(1,1))
-```
-
-```{r echo = FALSE, message=FALSE, warning=FALSE, fig.cap= "Relationship between Population and GHG Concentration"}
+```{r echo = FALSE, message=FALSE, warning=FALSE, fig.cap= "Relationship between Population and Total GHG Emissions"}
 
 ppl.all <- full_join(allGHG, newpop, by = 'Year')
 # Plot the regression
 GHGpop.plot <-ggplot(ppl.all, aes(x = US_pop, y = Total)) + 
   geom_line()+
-  labs(y= bquote(bold('GHG Emission (MMT'~CO[2]~'e)')),
+  geom_smooth(method ='lm')+
+  labs(y= bquote(bold('Total GHG Emission (MMT'~CO[2]~'e)')),
        x= 'Population',
-       color = '')+
-  geom_vline(xintercept = ppl.all$US_pop[which.max(ppl.all$Total)], color = "#f20505", lty = 2, size = 0.9)+
-  geom_text(y = 6400, x = 3.0e+08, label = 'Highest GHG Concentration Year: 2007', hjust = 1, size = 3, color = 'red')
+       color = '')
 print(GHGpop.plot)
 
 ```
@@ -803,3 +773,4 @@ print(GHGgdp.plot)
 
 # References
 <add references here if relevant, otherwise delete this section> 
+https://ww2.arb.ca.gov/ghg-2020-limit
